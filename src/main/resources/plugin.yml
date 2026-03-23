@@ -1,0 +1,12 @@
+name: BingoMC
+version: 1.0.0-SNAPSHOT
+main: com.hairo.bingomc.BingoMC
+api-version: "1.21"
+author: Hairo
+commands:
+  bingo:
+    description: Main Bingo command
+    usage: /bingo
+    test:
+      description: Test command for ASPM
+      usage: /bingo test

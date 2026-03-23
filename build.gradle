@@ -1,0 +1,34 @@
+plugins {
+  id 'java'
+}
+
+group = 'com.hairo.bingomc'
+version = '1.0.0-SNAPSHOT'
+
+repositories {
+  maven {
+    name = 'papermc'
+    url = uri('https://repo.papermc.io/repository/maven-public/')
+  }
+  maven {
+    name = 'infernal'
+    url = uri('https://repo.infernalsuite.com/repository/maven-snapshots/')
+  }
+  mavenCentral()
+}
+
+dependencies {
+  compileOnly 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT'
+  compileOnly 'com.infernalsuite.asp:api:4.0.0-SNAPSHOT'
+  implementation 'com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT'
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.encoding = 'UTF-8'
+}
