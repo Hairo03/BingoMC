@@ -52,4 +52,30 @@ public class GoalManager {
             }
         }
     }
+
+    public int getPoints(Player player) {
+        return getPoints(player.getUniqueId());
+    }
+
+    public int getPoints(UUID playerId) {
+        return completedByPlayer.getOrDefault(playerId, Set.of()).size();
+    }
+
+    public void onRoundStart(Player player) {
+        for (PlayerGoal goal : goals) {
+            if (goal instanceof RoundAwareGoal roundAwareGoal) {
+                roundAwareGoal.onRoundStart(player);
+            }
+        }
+    }
+
+    public void resetAllProgress() {
+        completedByPlayer.clear();
+        consumedItems.clear();
+        for (PlayerGoal goal : goals) {
+            if (goal instanceof RoundAwareGoal roundAwareGoal) {
+                roundAwareGoal.onRoundReset();
+            }
+        }
+    }
 }

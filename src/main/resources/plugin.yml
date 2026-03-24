@@ -6,7 +6,4 @@ author: Hairo
 commands:
   bingo:
     description: Main Bingo command
-    usage: /bingo
-    test:
-      description: Test command for ASPM
-      usage: /bingo test
+    usage: /bingo <start|test>
