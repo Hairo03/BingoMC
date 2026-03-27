@@ -15,7 +15,6 @@ import com.infernalsuite.asp.api.AdvancedSlimePaperAPI;
 import com.infernalsuite.asp.api.loaders.SlimeLoader;
 import com.infernalsuite.asp.api.world.SlimeWorld;
 import com.infernalsuite.asp.api.world.SlimeWorldInstance;
-import com.infernalsuite.asp.api.world.properties.SlimeProperties;
 import com.infernalsuite.asp.api.world.properties.SlimePropertyMap;
 import com.infernalsuite.asp.loaders.file.FileLoader;
 import net.kyori.adventure.bossbar.BossBar;
@@ -31,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -76,6 +76,15 @@ public class BingoMC extends JavaPlugin implements Listener {
 
         mainWorldName = Bukkit.getWorlds().get(0).getName();
         loader = new FileLoader(new File("./slime_worlds/"));
+
+        try {
+            importTemplateWorld();
+        } catch (Exception e) {
+            getLogger().severe("Failed to import template world: " + e.getMessage());
+            e.printStackTrace();
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new GoalEventListener(this, goalManager, consumeTracker), this);
@@ -242,7 +251,7 @@ public class BingoMC extends JavaPlugin implements Listener {
             try {
                 String worldName = buildPlayerWorldName(player, "test");
                 World world = createAndLoadWorld(worldName);
-                player.teleportAsync(world.getSpawnLocation());
+                player.teleportAsync(resolveSafeSpawn(world));
                 sender.sendActionBar(Component.text("Success! Loading new world..."));
             } catch (Exception e) {
                 sender.sendMessage(Component.text("Error creating/loading world: " + e.getMessage()));
@@ -279,7 +288,7 @@ public class BingoMC extends JavaPlugin implements Listener {
             try {
                 String worldName = buildPlayerWorldName(player, "round");
                 World world = createAndLoadWorld(worldName);
-                player.teleportAsync(world.getSpawnLocation());
+                player.teleportAsync(resolveSafeSpawn(world));
             } catch (Exception e) {
                 getLogger().warning("Failed to create personal world for " + player.getName() + ": " + e.getMessage());
                 player.sendMessage(Component.text("Could not load your personal Bingo world."));
@@ -305,16 +314,78 @@ public class BingoMC extends JavaPlugin implements Listener {
     }
 
     public World createAndLoadWorld(String worldName) throws Exception {
-        SlimePropertyMap props = new SlimePropertyMap();
-
-        props.setValue(SlimeProperties.DEFAULT_BIOME, "minecraft:plains");
-        props.setValue(SlimeProperties.WORLD_TYPE, "DEFAULT");
-
-        SlimeWorld world = asp.readVanillaWorld(new File("./slime_worlds/" + TEMPLATE_WORLD_NAME), TEMPLATE_WORLD_NAME, loader);
-        SlimeWorld clonedWorld = world.clone(worldName);
+        SlimeWorld templateWorld = asp.readWorld(loader, TEMPLATE_WORLD_NAME, true, new SlimePropertyMap());
+        SlimeWorld clonedWorld = templateWorld.clone(worldName);
 
         SlimeWorldInstance instance = asp.loadWorld(clonedWorld, false);
         return instance.getBukkitWorld();
+    }
+
+    private Location resolveSafeSpawn(World world) {
+        Location spawn = world.getSpawnLocation();
+        int baseChunkX = spawn.getBlockX() >> 4;
+        int baseChunkZ = spawn.getBlockZ() >> 4;
+
+        for (int radius = 0; radius <= 16; radius++) {
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    int chunkX = baseChunkX + dx;
+                    int chunkZ = baseChunkZ + dz;
+                    if (!world.isChunkGenerated(chunkX, chunkZ)) {
+                        continue;
+                    }
+
+                    int x = (chunkX << 4) + 8;
+                    int z = (chunkZ << 4) + 8;
+                    int y = world.getHighestBlockYAt(x, z);
+                    if (y <= world.getMinHeight()) {
+                        continue;
+                    }
+
+                    Location safe = new Location(world, x + 0.5, y + 1.0, z + 0.5, spawn.getYaw(), spawn.getPitch());
+                    world.setSpawnLocation(safe);
+                    return safe;
+                }
+            }
+        }
+
+        int fallbackY = Math.max(world.getMinHeight() + 1, spawn.getBlockY());
+        Location fallback = new Location(world, spawn.getX(), fallbackY, spawn.getZ(), spawn.getYaw(), spawn.getPitch());
+        getLogger().warning("Could not find a generated chunk near spawn in world " + world.getName() + ", using fallback location.");
+        return fallback;
+    }
+
+    private void importTemplateWorld() throws Exception {
+        try {
+            asp.readWorld(loader, TEMPLATE_WORLD_NAME, true, new SlimePropertyMap());
+            getLogger().info("Template world already exists in loader: " + TEMPLATE_WORLD_NAME);
+            return;
+        } catch (Exception ignored) {
+            
+        }
+
+        File worldContainer = Bukkit.getWorldContainer();
+        File templateDir = new File(worldContainer, TEMPLATE_WORLD_NAME);
+        File levelDat = new File(templateDir, "level.dat");
+
+        if (!templateDir.isDirectory() || !levelDat.isFile()) {
+            throw new IllegalStateException("Template world missing level.dat at: " + templateDir.getAbsolutePath());
+        }
+
+        getLogger().info("Importing template world from: " + templateDir.getAbsolutePath());
+
+        SlimeWorld imported;
+        try {
+            imported = asp.readVanillaWorld(worldContainer, TEMPLATE_WORLD_NAME, loader);
+            getLogger().info("Imported template using parent-directory style readVanillaWorld call.");
+        } catch (Exception firstAttemptError) {
+            getLogger().warning("Parent-directory style import failed: " + firstAttemptError.getMessage());
+            imported = asp.readVanillaWorld(templateDir, TEMPLATE_WORLD_NAME, loader);
+            getLogger().info("Imported template using direct-world-directory style readVanillaWorld call.");
+        }
+
+        asp.saveWorld(imported);
+        getLogger().info("Saved imported template world into loader: " + TEMPLATE_WORLD_NAME);
     }
 
     private String buildPlayerWorldName(Player player, String prefix) {
