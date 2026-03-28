@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import xyz.xenondevs.invui.gui.Gui;
@@ -47,7 +46,7 @@ public final class GoalsViewerGui {
             int points = plugin.getGoalManager().getGoalPoints(goal.id());
 
             goalItems.add(Item.simple(new ItemBuilder(icon)
-                .setName((done ? "<green><bold>" : "<yellow><bold>") + goal.descriptionText())
+                .setName((done ? "<green>" : "<yellow>") + goal.descriptionText())
                 .addLoreLines(
                     "<dark_gray>Reward: <aqua><bold>" + points + " pts",
                     done ? "<green><bold>Completed" : "<red><bold>Incomplete"
@@ -65,7 +64,7 @@ public final class GoalsViewerGui {
         Window window = Window.builder()
             .setViewer(player)
             .setTitle(
-                Component.text("Bingo Goals", NamedTextColor.BLACK, TextDecoration.BOLD)
+                Component.text("Bingo Goals", NamedTextColor.BLACK)
                     .append(Component.text(" - ", NamedTextColor.DARK_GRAY))
                     .append(Component.text(currentPoints + " pts", NamedTextColor.DARK_GREEN))
             )

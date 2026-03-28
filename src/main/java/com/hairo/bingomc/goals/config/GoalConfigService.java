@@ -1,8 +1,8 @@
 package com.hairo.bingomc.goals.config;
 
-import com.hairo.bingomc.goals.impl.BlockCountGoal;
 import com.hairo.bingomc.goals.impl.ConsumeItemGoal;
 import com.hairo.bingomc.goals.impl.ItemCraftGoal;
+import com.hairo.bingomc.goals.impl.KillEntityGoal;
 import com.hairo.bingomc.goals.impl.ObtainItemGoal;
 import com.hairo.bingomc.goals.impl.UseVehicleGoal;
 import com.hairo.bingomc.goals.util.ConsumeTracker;
@@ -20,7 +20,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class GoalConfigService {
     private final JavaPlugin plugin;
-    private final ConsumeTracker consumeTracker;
 
     @FunctionalInterface
     private interface GoalFactory {
@@ -31,13 +30,12 @@ public final class GoalConfigService {
 
     public GoalConfigService(JavaPlugin plugin, ConsumeTracker consumeTracker) {
         this.plugin = plugin;
-        this.consumeTracker = consumeTracker;
         this.factories = Map.of(
-            "block_count", (id, points, section) -> new LoadedGoal(new BlockCountGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points),
             "craft_item", (id, points, section) -> new LoadedGoal(new ItemCraftGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points),
             "consume_item", (id, points, section) -> new LoadedGoal(new ConsumeItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), consumeTracker), points),
             "use_vehicle", (id, points, section) -> new LoadedGoal(new UseVehicleGoal(id, parseEntityType(section, "entity_type")), points),
-            "obtain_item", (id, points, section) -> new LoadedGoal(new ObtainItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points));
+            "obtain_item", (id, points, section) -> new LoadedGoal(new ObtainItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points),
+            "kill_entity", (id, points, section) -> new LoadedGoal(new KillEntityGoal(id, parseEntityType(section, "entity_type"), parseAmount(section, "amount", 1)), points));
     }
 
     public GoalLoadResult loadGoals() {

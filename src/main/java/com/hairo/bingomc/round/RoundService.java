@@ -208,7 +208,7 @@ public class RoundService {
 
     public void showStartingTitle() {
         Title startingTitle = Title.title(
-            Component.text("Bingo game starting...", NamedTextColor.GOLD, TextDecoration.BOLD),
+            Component.text("Bingo game starting...", NamedTextColor.GOLD),
             Component.empty(),
             Title.Times.times(Duration.ofMillis(150), Duration.ofSeconds(5), Duration.ofMillis(200))
         );

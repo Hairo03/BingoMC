@@ -10,7 +10,6 @@ public enum GoalTrigger {
     FISHING,
     ENCHANT,
     BREED,
-    SMELT,
     TAME,
     KILL_ENTITY,
 }
