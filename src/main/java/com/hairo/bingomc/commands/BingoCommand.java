@@ -1,6 +1,5 @@
 package com.hairo.bingomc.commands;
 
-import com.hairo.bingomc.BingoMC;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -10,10 +9,10 @@ import java.util.List;
 
 public class BingoCommand {
 
-    private final BingoMC plugin;
+    private final BingoCommandHandler commandHandler;
 
-    public BingoCommand(BingoMC plugin) {
-        this.plugin = plugin;
+    public BingoCommand(BingoCommandHandler commandHandler) {
+        this.commandHandler = commandHandler;
     }
 
     public void register(Commands commands) {
@@ -32,37 +31,37 @@ public class BingoCommand {
     }
 
     private int executeRoot(CommandContext<CommandSourceStack> context) {
-        plugin.sendBingoUsage(context.getSource().getSender());
+        commandHandler.sendBingoUsage(context.getSource().getSender());
         return 1;
     }
 
     private int executeStart(CommandContext<CommandSourceStack> context) {
-        plugin.handleStartCommand(context.getSource().getSender());
+        commandHandler.handleStartCommand(context.getSource().getSender());
         return 1;
     }
 
     private int executeStop(CommandContext<CommandSourceStack> context) {
-        plugin.handleStopCommand(context.getSource().getSender());
+        commandHandler.handleStopCommand(context.getSource().getSender());
         return 1;
     }
 
     private int executeGoalsView(CommandContext<CommandSourceStack> context) {
-        plugin.handleGoalsViewCommand(context.getSource().getSender());
+        commandHandler.handleGoalsViewCommand(context.getSource().getSender());
         return 1;
     }
 
     private int executeGoalsAdmin(CommandContext<CommandSourceStack> context) {
-        plugin.handleGoalsAdminCommand(context.getSource().getSender());
+        commandHandler.handleGoalsAdminCommand(context.getSource().getSender());
         return 1;
     }
 
     private int executeGoalsValidate(CommandContext<CommandSourceStack> context) {
-        plugin.handleGoalsValidateCommand(context.getSource().getSender());
+        commandHandler.handleGoalsValidateCommand(context.getSource().getSender());
         return 1;
     }
 
     private int executeGoalsReload(CommandContext<CommandSourceStack> context) {
-        plugin.handleGoalsReloadCommand(context.getSource().getSender());
+        commandHandler.handleGoalsReloadCommand(context.getSource().getSender());
         return 1;
     }
 }
