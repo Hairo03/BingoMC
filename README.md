@@ -18,8 +18,10 @@ A Minecraft plugin that implements a Bingo gamemode for Paper/Spigot servers. Pl
 
 - **Java**: 21 or higher
 - **Minecraft Server**: Paper 1.21.4 or compatible version
-- **Libraries**:
-  - Paper API 1.21.4
+- **Server Plugins**:
+   - Multiverse-Core
+   - Multiverse-NetherPortals
+   - Multiverse-Inventories
 
 ## Setup & Installation
 
@@ -48,8 +50,8 @@ A Minecraft plugin that implements a Bingo gamemode for Paper/Spigot servers. Pl
 
 4. **Install on Server**
    - Copy the JAR file to your Paper server's `plugins/` directory
+   - Install Multiverse-Core, Multiverse-NetherPortals, and Multiverse-Inventories
    - Restart the server
-   - The plugin will auto-generate necessary configuration files
 
 ### Requirements Before First Run
 
@@ -65,9 +67,11 @@ A Minecraft plugin that implements a Bingo gamemode for Paper/Spigot servers. Pl
 ### In-Game Gameplay
 
 Once a bingo session is started, players will:
-1. Receive goal objectives (No way to track them yet)
-2. Complete objectives by performing in-game actions
-3. Achieve points by completing required goals
+1. Be teleported into their own personal Bingo world
+2. Receive goal objectives
+3. Complete objectives by performing in-game actions
+4. Achieve points by completing required goals
+5. Return to the main world when the round timer expires
 
 ## Architecture Overview
 
@@ -101,6 +105,9 @@ The plugin uses a flexible goal management system built on the `PlayerGoal` inte
 | Dependency | Version | Purpose |
 |-----------|---------|---------|
 | Paper API | 1.21.4-R0.1-SNAPSHOT | Minecraft server API |
+| Multiverse-Core | 5.5.3 | Per-player world lifecycle |
+| Multiverse-NetherPortals | 5.0.4 | Per-player Nether/End portal routing |
+| Multiverse-Inventories | 5.3.2 | Per-player inventory isolation |
 
 ## Future Enhancements
 

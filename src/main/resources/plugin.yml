@@ -3,6 +3,10 @@ version: 1.0.0-SNAPSHOT
 main: com.hairo.bingomc.BingoMC
 api-version: "1.21"
 author: Hairo
+depend:
+  - Multiverse-Core
+  - Multiverse-NetherPortals
+  - Multiverse-Inventories
 commands:
   bingo:
     description: Main Bingo command
