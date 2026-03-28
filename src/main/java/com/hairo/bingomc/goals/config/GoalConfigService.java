@@ -37,8 +37,7 @@ public final class GoalConfigService {
             "craft_item", (id, points, section) -> new LoadedGoal(new ItemCraftGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points),
             "consume_item", (id, points, section) -> new LoadedGoal(new ConsumeItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), consumeTracker), points),
             "use_vehicle", (id, points, section) -> new LoadedGoal(new UseVehicleGoal(id, parseEntityType(section, "entity_type")), points),
-            "obtain_item", (id, points, section) -> new LoadedGoal(new ObtainItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points))
-        );
+            "obtain_item", (id, points, section) -> new LoadedGoal(new ObtainItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points));
     }
 
     public GoalLoadResult loadGoals() {
