@@ -61,7 +61,6 @@ A Minecraft plugin that implements a Bingo gamemode for Paper/Spigot servers. Pl
 ### Commands
 
 - `/bingo start` - Initialize and start a bingo game session (operators only)
-- `/bingo test` - Create and load a personal test world (Slime world functionality not working yet)
 
 ### In-Game Gameplay
 
@@ -90,10 +89,6 @@ The plugin uses a flexible goal management system built on the `PlayerGoal` inte
 3. Define appropriate `GoalTrigger` types
 4. Register in `GoalManager`
 5. Add listener handling if needed in `GoalEventListener.java`
-
-### Testing
-
-Use `/bingo test` to create and load a personal Slime world for testing world functionality. (WIP)
 
 ## Version Information
 

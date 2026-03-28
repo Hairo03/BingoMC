@@ -6,4 +6,4 @@ author: Hairo
 commands:
   bingo:
     description: Main Bingo command
-    usage: /bingo <start|test>
+    usage: /bingo <start>
