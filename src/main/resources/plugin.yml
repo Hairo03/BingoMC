@@ -7,7 +7,7 @@ depend:
   - Multiverse-Core
   - Multiverse-NetherPortals
   - Multiverse-Inventories
-commands:
-  bingo:
-    description: Main Bingo command
-    usage: /bingo <start>
+permissions:
+  bingomc.goals.admin:
+    description: Allows opening the goals admin UI and managing goals
+    default: op

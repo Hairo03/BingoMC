@@ -1,0 +1,27 @@
+goals:
+  - id: collect_dirt_16
+    type: block_count
+    material: DIRT
+    amount: 16
+    points: 1
+    enabled: true
+
+  - id: craft_stick
+    type: craft_item
+    material: STICK
+    amount: 1
+    points: 1
+    enabled: true
+
+  - id: mount_horse
+    type: use_vehicle
+    entity_type: HORSE
+    points: 1
+    enabled: true
+
+  - id: eat_apple
+    type: consume_item
+    material: APPLE
+    amount: 1
+    points: 1
+    enabled: true

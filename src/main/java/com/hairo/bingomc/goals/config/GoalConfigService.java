@@ -1,0 +1,175 @@
+package com.hairo.bingomc.goals.config;
+
+import com.hairo.bingomc.goals.impl.BlockCountGoal;
+import com.hairo.bingomc.goals.impl.ConsumeItemGoal;
+import com.hairo.bingomc.goals.impl.ItemCraftGoal;
+import com.hairo.bingomc.goals.impl.UseVehicleGoal;
+import com.hairo.bingomc.goals.util.ConsumeTracker;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import org.bukkit.Material;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public final class GoalConfigService {
+    private final JavaPlugin plugin;
+    private final ConsumeTracker consumeTracker;
+
+    public GoalConfigService(JavaPlugin plugin, ConsumeTracker consumeTracker) {
+        this.plugin = plugin;
+        this.consumeTracker = consumeTracker;
+    }
+
+    public GoalLoadResult loadGoals() {
+        ensureGoalsFileExists();
+
+        File goalsFile = new File(plugin.getDataFolder(), "goals.yml");
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(goalsFile);
+        List<Map<?, ?>> rawGoals = config.getMapList("goals");
+
+        if (rawGoals.isEmpty()) {
+            return new GoalLoadResult(List.of(), List.of("Missing 'goals' list in goals.yml"));
+        }
+
+        List<LoadedGoal> loaded = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+        Set<String> ids = new HashSet<>();
+
+        for (int i = 0; i < rawGoals.size(); i++) {
+            Map<?, ?> section = rawGoals.get(i);
+
+            String id = readString(section, "id").trim();
+            if (id.isEmpty()) {
+                errors.add("goals[" + i + "] is missing id.");
+                continue;
+            }
+            if (!ids.add(id)) {
+                errors.add("Duplicate goal id: " + id);
+                continue;
+            }
+
+            boolean enabled = readBoolean(section, "enabled", true);
+            if (!enabled) {
+                continue;
+            }
+
+            int points = Math.max(1, readInt(section, "points", 1));
+            String type = readString(section, "type").trim().toLowerCase(Locale.ROOT);
+
+            try {
+                LoadedGoal goal = switch (type) {
+                    case "block_count" -> new LoadedGoal(
+                        new BlockCountGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)),
+                        points
+                    );
+                    case "craft_item" -> new LoadedGoal(
+                        new ItemCraftGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)),
+                        points
+                    );
+                    case "consume_item" -> new LoadedGoal(
+                        new ConsumeItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), consumeTracker),
+                        points
+                    );
+                    case "use_vehicle" -> new LoadedGoal(
+                        new UseVehicleGoal(id, parseEntityType(section, "entity_type")),
+                        points
+                    );
+                    default -> throw new IllegalArgumentException("Unsupported goal type: " + type);
+                };
+
+                loaded.add(goal);
+            } catch (IllegalArgumentException ex) {
+                errors.add("goals[" + i + "] (" + id + "): " + ex.getMessage());
+            }
+        }
+
+        if (loaded.isEmpty() && errors.isEmpty()) {
+            errors.add("No enabled goals found in goals.yml.");
+        }
+
+        return new GoalLoadResult(loaded, errors);
+    }
+
+    private String readString(Map<?, ?> section, String key) {
+        Object value = section.get(key);
+        return value == null ? "" : String.valueOf(value);
+    }
+
+    private int readInt(Map<?, ?> section, String key, int defaultValue) {
+        Object value = section.get(key);
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        if (value instanceof String text) {
+            try {
+                return Integer.parseInt(text);
+            } catch (NumberFormatException ignored) {
+                return defaultValue;
+            }
+        }
+        return defaultValue;
+    }
+
+    private boolean readBoolean(Map<?, ?> section, String key, boolean defaultValue) {
+        Object value = section.get(key);
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+        if (value instanceof String text) {
+            return Boolean.parseBoolean(text);
+        }
+        return defaultValue;
+    }
+
+    private void ensureGoalsFileExists() {
+        if (!plugin.getDataFolder().exists()) {
+            plugin.getDataFolder().mkdirs();
+        }
+        File file = new File(plugin.getDataFolder(), "goals.yml");
+        if (!file.exists()) {
+            plugin.saveResource("goals.yml", false);
+        }
+    }
+
+    private Material parseMaterial(Map<?, ?> section, String key) {
+        String value = readString(section, key).trim().toUpperCase(Locale.ROOT);
+        if (value.isEmpty()) {
+            throw new IllegalArgumentException("Missing material");
+        }
+        Material material = Material.matchMaterial(value);
+        if (material == null) {
+            throw new IllegalArgumentException("Unknown material: " + value);
+        }
+        return material;
+    }
+
+    private EntityType parseEntityType(Map<?, ?> section, String key) {
+        String value = readString(section, key).trim().toUpperCase(Locale.ROOT);
+        if (value.isEmpty()) {
+            throw new IllegalArgumentException("Missing entity_type");
+        }
+        try {
+            EntityType entityType = EntityType.valueOf(value);
+            if (!entityType.isSpawnable()) {
+                throw new IllegalArgumentException("Entity type is not spawnable: " + value);
+            }
+            return entityType;
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Unknown entity type: " + value);
+        }
+    }
+
+    private int parseAmount(Map<?, ?> section, String key, int min) {
+        int amount = readInt(section, key, min);
+        if (amount < min) {
+            throw new IllegalArgumentException(key + " must be >= " + min);
+        }
+        return amount;
+    }
+}
