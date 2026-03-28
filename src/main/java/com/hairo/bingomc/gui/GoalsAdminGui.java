@@ -32,7 +32,7 @@ public final class GoalsAdminGui {
             .addIngredient('#', Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("<dark_gray>")))
             .build();
 
-        int maxItems = 21;
+        int maxItems = 28;
         for (int i = 0; i < Math.min(goals.size(), maxItems); i++) {
             PlayerGoal goal = goals.get(i);
             int points = plugin.getGoalManager().getGoalPoints(goal.id());

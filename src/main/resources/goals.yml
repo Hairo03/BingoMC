@@ -1,34 +1,228 @@
 goals:
-  - id: collect_dirt_16
+  # EASY (7)
+  - id: easy_collect_oak_log_16
+    difficulty: easy
     type: obtain_item
-    material: DIRT
+    material: OAK_LOG
     amount: 16
-    points: 1
+    points: 25
     enabled: true
 
-  - id: craft_stick
+  - id: easy_collect_cobblestone_32
+    difficulty: easy
+    type: obtain_item
+    material: COBBLESTONE
+    amount: 32
+    points: 25
+    enabled: true
+
+  - id: easy_craft_crafting_table
+    difficulty: easy
     type: craft_item
-    material: STICK
+    material: CRAFTING_TABLE
     amount: 1
-    points: 1
+    points: 25
     enabled: true
 
-  - id: mount_horse
-    type: use_vehicle
-    entity_type: HORSE
-    points: 1
+  - id: easy_craft_bread
+    difficulty: easy
+    type: craft_item
+    material: BREAD
+    amount: 1
+    points: 25
     enabled: true
 
-  - id: eat_apple
+  - id: easy_consume_apple
+    difficulty: easy
     type: consume_item
     material: APPLE
     amount: 1
-    points: 1
+    points: 25
     enabled: true
-  
-  - id: kill_cow
+
+  - id: easy_kill_cow_2
+    difficulty: easy
     type: kill_entity
     entity_type: COW
+    amount: 2
+    points: 25
+    enabled: true
+
+  - id: easy_sweet_dreams_advancement
+    difficulty: easy
+    type: unlock_advancement
+    advancement_key: adventure/sleep_in_bed
+    points: 25
+    enabled: true
+
+
+  # MEDIUM (7)
+  - id: medium_collect_iron_ingot_24
+    difficulty: medium
+    type: obtain_item
+    material: IRON_INGOT
+    amount: 24
+    points: 50
+    enabled: true
+
+  - id: medium_collect_lapis_lazuli_16
+    difficulty: medium
+    type: obtain_item
+    material: LAPIS_LAZULI
+    amount: 16
+    points: 50
+    enabled: true
+
+  - id: medium_craft_iron_pickaxe
+    difficulty: medium
+    type: craft_item
+    material: IRON_PICKAXE
     amount: 1
-    points: 1
+    points: 50
+    enabled: true
+
+  - id: medium_craft_shield
+    difficulty: medium
+    type: craft_item
+    material: SHIELD
+    amount: 1
+    points: 50
+    enabled: true
+
+  - id: medium_consume_cooked_beef_3
+    difficulty: medium
+    type: consume_item
+    material: COOKED_BEEF
+    amount: 3
+    points: 50
+    enabled: true
+
+  - id: medium_kill_skeleton_5
+    difficulty: medium
+    type: kill_entity
+    entity_type: SKELETON
+    amount: 5
+    points: 50
+    enabled: true
+
+  - id: medium_mount_horse
+    difficulty: medium
+    type: use_vehicle
+    entity_type: HORSE
+    points: 50
+    enabled: true
+
+
+  # HARD (7)
+  - id: hard_craft_diamond_pickaxe
+    difficulty: hard
+    type: craft_item
+    material: DIAMOND_PICKAXE
+    amount: 1
+    points: 100
+    enabled: true
+
+  - id: hard_collect_ender_pearl_8
+    difficulty: hard
+    type: obtain_item
+    material: ENDER_PEARL
+    amount: 8
+    points: 100
+    enabled: true
+
+  - id: hard_collect_blaze_rod_8
+    difficulty: hard
+    type: obtain_item
+    material: BLAZE_ROD
+    amount: 8
+    points: 100
+    enabled: true
+
+  - id: hard_craft_enchanting_table
+    difficulty: hard
+    type: craft_item
+    material: ENCHANTING_TABLE
+    amount: 1
+    points: 100
+    enabled: true
+
+  - id: hard_consume_golden_apple
+    difficulty: hard
+    type: consume_item
+    material: GOLDEN_APPLE
+    amount: 1
+    points: 100
+    enabled: true
+
+  - id: hard_kill_evoker_1
+    difficulty: hard
+    type: kill_entity
+    entity_type: EVOKER
+    amount: 1
+    points: 100
+    enabled: true
+
+  - id: hard_return_to_sender_advancement
+    difficulty: hard
+    type: unlock_advancement
+    advancement_key: minecraft:nether/return_to_sender
+    points: 100
+    enabled: true
+
+
+  # IMPOSSIBLE (7)
+  - id: impossible_collect_netherite_ingot_1
+    difficulty: impossible
+    type: obtain_item
+    material: NETHERITE_INGOT
+    amount: 1
+    points: 200
+    enabled: true
+
+  - id: impossible_kill_warden
+    difficulty: impossible
+    type: kill_entity
+    entity_type: WARDEN
+    amount: 1
+    points: 200
+    enabled: true
+
+  - id: impossible_collect_totem_1
+    difficulty: impossible
+    type: obtain_item
+    material: TOTEM_OF_UNDYING
+    amount: 1
+    points: 200
+    enabled: true
+
+  - id: impossible_craft_recovery_compass
+    difficulty: impossible
+    type: craft_item
+    material: RECOVERY_COMPASS
+    amount: 1
+    points: 200
+    enabled: true
+
+  - id: impossible_consume_enchanted_golden_apple
+    difficulty: impossible
+    type: consume_item
+    material: ENCHANTED_GOLDEN_APPLE
+    amount: 1
+    points: 200
+    enabled: true
+
+  - id: impossible_kill_wither
+    difficulty: impossible
+    type: kill_entity
+    entity_type: WITHER
+    amount: 1
+    points: 200
+    enabled: true
+
+  - id: impossible_kill_ender_dragon
+    difficulty: impossible
+    type: kill_entity
+    entity_type: ENDER_DRAGON
+    amount: 1
+    points: 200
     enabled: true

@@ -53,7 +53,7 @@ public final class GoalsViewerGui {
                 )));
         }
 
-        int maxItems = 21;
+        int maxItems = 28;
         for (int i = 0; i < Math.min(goalItems.size(), maxItems); i++) {
             int row = 1 + (i / 7);
             int col = 1 + (i % 7);

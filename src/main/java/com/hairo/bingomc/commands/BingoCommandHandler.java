@@ -78,7 +78,8 @@ public class BingoCommandHandler {
                 roundService.showStartingTitle();
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     long selectedSeed = newGameGui.getWorldSeed();
-                    boolean started = roundService.startRound(selectedSeed);
+                    long selectedTimeLimit = newGameGui.getTimeLimit();
+                    boolean started = roundService.startRound(selectedSeed, selectedTimeLimit);
                     roundService.clearStartingTitle();
 
                     if (started) {

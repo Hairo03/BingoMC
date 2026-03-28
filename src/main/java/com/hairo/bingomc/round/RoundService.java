@@ -33,7 +33,7 @@ public class RoundService {
     private final ConsumeTracker consumeTracker;
     private final BingoWorldService worldService;
     private final String mainWorldName;
-    private final long gameDurationSeconds;
+    private final long defaultGameDurationSeconds;
     private final Function<Component, Component> prefixer;
 
     private final Set<UUID> roundParticipants = new HashSet<>();
@@ -57,13 +57,13 @@ public class RoundService {
         this.consumeTracker = consumeTracker;
         this.worldService = worldService;
         this.mainWorldName = mainWorldName;
-        this.gameDurationSeconds = gameDurationSeconds;
+        this.defaultGameDurationSeconds = gameDurationSeconds;
         this.prefixer = prefixer;
     }
 
     public void initialize() {
         timer = new Timer();
-        timer.setLimitSeconds(gameDurationSeconds);
+        timer.setLimitSeconds(defaultGameDurationSeconds);
         timer.reset();
         gameRunning = false;
         timerExpiredHandled = false;
@@ -128,9 +128,15 @@ public class RoundService {
     }
 
     public boolean startRound(long worldSeed) {
+        return startRound(worldSeed, defaultGameDurationSeconds);
+    }
+
+    public boolean startRound(long worldSeed, long selectedDurationSeconds) {
         if (gameRunning) {
             return false;
         }
+
+        long roundDurationSeconds = selectedDurationSeconds > 0 ? selectedDurationSeconds : defaultGameDurationSeconds;
 
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
         if (onlinePlayers.isEmpty()) {
@@ -165,14 +171,14 @@ public class RoundService {
         worldService.activateRoundWorldSets(createdWorldSets);
 
         timer.reset();
-        timer.setLimitSeconds(gameDurationSeconds);
+        timer.setLimitSeconds(roundDurationSeconds);
         timer.start();
         timerExpiredHandled = false;
         gameRunning = true;
 
         if (timerBossBar != null) {
             timerBossBar.progress(1.0f);
-            timerBossBar.name(bossBarTime(formatClock(gameDurationSeconds)));
+            timerBossBar.name(bossBarTime(formatClock(roundDurationSeconds)));
             for (Player player : Bukkit.getOnlinePlayers()) {
                 player.showBossBar(timerBossBar);
             }
@@ -180,7 +186,7 @@ public class RoundService {
 
         Bukkit.broadcast(prefixer.apply(
             Component.text("Bingo round has started. You have ", NamedTextColor.GREEN)
-                .append(Component.text(formatClock(gameDurationSeconds), NamedTextColor.AQUA, TextDecoration.BOLD))
+                .append(Component.text(formatClock(roundDurationSeconds), NamedTextColor.AQUA, TextDecoration.BOLD))
                 .append(Component.text(" minutes.", NamedTextColor.GREEN))
                 .append(Component.text(" Use ", NamedTextColor.YELLOW))
                 .append(Component.text("/bingo goals", NamedTextColor.WHITE, TextDecoration.BOLD))

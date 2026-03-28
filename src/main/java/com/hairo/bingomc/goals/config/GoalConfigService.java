@@ -4,6 +4,7 @@ import com.hairo.bingomc.goals.impl.ConsumeItemGoal;
 import com.hairo.bingomc.goals.impl.ItemCraftGoal;
 import com.hairo.bingomc.goals.impl.KillEntityGoal;
 import com.hairo.bingomc.goals.impl.ObtainItemGoal;
+import com.hairo.bingomc.goals.impl.UnlockAdvancementGoal;
 import com.hairo.bingomc.goals.impl.UseVehicleGoal;
 import com.hairo.bingomc.goals.util.ConsumeTracker;
 import java.io.File;
@@ -14,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -35,7 +37,8 @@ public final class GoalConfigService {
             "consume_item", (id, points, section) -> new LoadedGoal(new ConsumeItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), consumeTracker), points),
             "use_vehicle", (id, points, section) -> new LoadedGoal(new UseVehicleGoal(id, parseEntityType(section, "entity_type")), points),
             "obtain_item", (id, points, section) -> new LoadedGoal(new ObtainItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points),
-            "kill_entity", (id, points, section) -> new LoadedGoal(new KillEntityGoal(id, parseEntityType(section, "entity_type"), parseAmount(section, "amount", 1)), points));
+            "kill_entity", (id, points, section) -> new LoadedGoal(new KillEntityGoal(id, parseEntityType(section, "entity_type"), parseAmount(section, "amount", 1)), points),
+            "unlock_advancement", (id, points, section) -> new LoadedGoal(new UnlockAdvancementGoal(id, parseAdvancementKey(section, "advancement_key")), points));
     }
 
     public GoalLoadResult loadGoals() {
@@ -172,5 +175,32 @@ public final class GoalConfigService {
             throw new IllegalArgumentException(key + " must be >= " + min);
         }
         return amount;
+    }
+
+    private NamespacedKey parseAdvancementKey(Map<?, ?> section, String key) {
+        String value = readString(section, key).trim();
+        return parseAdvancementKeyValue(value, key);
+    }
+
+    private NamespacedKey parseAdvancementKeyValue(String value, String keyLabel) {
+        if (value.isEmpty()) {
+            throw new IllegalArgumentException("Missing " + keyLabel);
+        }
+
+        String normalized = value.toLowerCase(Locale.ROOT);
+        if (!normalized.contains(":")) {
+            normalized = "minecraft:" + normalized;
+        }
+
+        NamespacedKey parsed = NamespacedKey.fromString(normalized);
+        if (parsed == null) {
+            throw new IllegalArgumentException("Invalid advancement key in " + keyLabel + ": " + value);
+        }
+
+        if (plugin.getServer().getAdvancement(parsed) == null) {
+            throw new IllegalArgumentException("Unknown advancement key in " + keyLabel + ": " + parsed);
+        }
+
+        return parsed;
     }
 }

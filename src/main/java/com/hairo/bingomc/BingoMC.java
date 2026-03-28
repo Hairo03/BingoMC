@@ -28,6 +28,8 @@ import com.hairo.bingomc.commands.BingoCommand;
 
 public class BingoMC extends JavaPlugin implements Listener {
 
+    private static final long DEFAULT_GAME_DURATION_SECONDS = 5L * 60L;
+
     private final GoalManager goalManager = new GoalManager();
     private ConsumeTracker consumeTracker;
     private GoalsViewerGui goalsViewerGui;
@@ -36,8 +38,6 @@ public class BingoMC extends JavaPlugin implements Listener {
     private GoalsService goalsService;
     private RoundService roundService;
     private BingoCommandHandler commandHandler;
-
-    private static final long GAME_DURATION_SECONDS = 300L;
 
     @Override
     public void onEnable() {
@@ -62,7 +62,7 @@ public class BingoMC extends JavaPlugin implements Listener {
             consumeTracker,
             worldService,
             mainWorldName,
-            GAME_DURATION_SECONDS,
+            DEFAULT_GAME_DURATION_SECONDS,
             this::prefixed
         );
         roundService.initialize();
