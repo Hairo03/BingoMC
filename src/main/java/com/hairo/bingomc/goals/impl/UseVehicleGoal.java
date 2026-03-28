@@ -40,8 +40,8 @@ public class UseVehicleGoal implements PlayerGoal {
     }
 
     @Override
-    public String completionText() {
-        return "Goal complete: Used a " + vehicleType.name().toLowerCase();
+    public String descriptionText() {
+        return "Ride a " + vehicleType.name().toLowerCase().replace('_', ' ');
     }
 
     private static EntityType resolveEntityType(Class<? extends Entity> vehicleClass) {

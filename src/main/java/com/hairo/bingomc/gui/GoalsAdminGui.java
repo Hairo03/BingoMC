@@ -22,16 +22,14 @@ public final class GoalsAdminGui {
 
         Gui gui = Gui.builder()
             .setStructure(
-                "a b b b c b b b a",
-                "d x x x x x x x d",
-                "d x x x x x x x d",
-                "d x x x x x x x d",
-                "a b b b c b b b a"
+                "# # # # # # # # #",
+                "# x x x x x x x #",
+                "# x x x x x x x #",
+                "# x x x x x x x #",
+                "# x x x x x x x #",
+                "# # # # # # # # #"
             )
-            .addIngredient('a', Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("<dark_gray>")))
-            .addIngredient('b', Item.simple(new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setName("<gray>")))
-            .addIngredient('c', Item.simple(new ItemBuilder(Material.BLUE_STAINED_GLASS_PANE).setName("<blue><bold>Admin Tools")))
-            .addIngredient('d', Item.simple(new ItemBuilder(Material.LIGHT_BLUE_STAINED_GLASS_PANE).setName("<blue>")))
+            .addIngredient('#', Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("<dark_gray>")))
             .build();
 
         int maxItems = 21;
@@ -41,7 +39,7 @@ public final class GoalsAdminGui {
             Item item = Item.simple(new ItemBuilder(Material.WRITABLE_BOOK)
                 .setName("<gold><bold>" + goal.id())
                 .addLoreLines(
-                    "<gray>" + goal.completionText(),
+                    "<gray>" + goal.descriptionText(),
                     "<dark_gray>Reward: <aqua><bold>" + points + " pts",
                     "<yellow>Editing actions are still in progress.",
                     "<gray>Use <white>/bingo goals validate",

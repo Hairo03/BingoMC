@@ -42,7 +42,7 @@ public class BlockCountGoal implements PlayerGoal {
     }
 
     @Override
-    public String completionText() {
-        return "Goal complete: " + amount + " " + block.name().toLowerCase();
+    public String descriptionText() {
+        return "Collect " + amount + " " + block.name().toLowerCase().replace('_', ' ');
     }
 }

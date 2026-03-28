@@ -50,14 +50,12 @@ public final class NewGameGui {
 
         Gui gui = Gui.builder()
                 .setStructure(
-            "a b b b c b b b a",
-            "a # # n # y # # a",
-            "a # # # # # # # a",
-            "a b b b c b b b a")
-            .addIngredient('a', Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("<dark_gray>")))
-            .addIngredient('b', Item.simple(new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setName("<gray>")))
-            .addIngredient('c', Item.simple(new ItemBuilder(Material.GREEN_STAINED_GLASS_PANE).setName("<green><bold>Seed Setup")))
-            .addIngredient('#', Item.simple(new ItemBuilder(Material.LIGHT_GRAY_STAINED_GLASS_PANE).setName("<gray>")))
+            "# # # # z # # # #",
+            "# # # n # y # # #",
+            "# # # # # # # # #",
+            "# # # # # # # # #")
+            .addIngredient('#', Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("<dark_gray>")))
+            .addIngredient('z', Item.simple(new ItemBuilder(Material.GREEN_STAINED_GLASS_PANE).setName("<green><bold>Seed Setup")))
                 .addIngredient('n', cancel)
                 .addIngredient('y', confirm)
                 .build();
@@ -66,7 +64,7 @@ public final class NewGameGui {
                 .setViewer(player)
                 .setLowerGui(gui)
             .setTitle(
-                Component.text("Enter world seed:", NamedTextColor.DARK_GREEN, TextDecoration.BOLD))
+                Component.text("Enter world seed:", NamedTextColor.BLACK, TextDecoration.BOLD))
                 .addRenameHandler(seed -> worldSeed = parseSeed(seed))
                 .open(player);
         return result;

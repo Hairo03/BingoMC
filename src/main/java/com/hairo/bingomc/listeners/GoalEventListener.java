@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
@@ -72,7 +73,7 @@ public class GoalEventListener implements Listener {
     }
 
     @EventHandler
-    public void onCraft(org.bukkit.event.inventory.CraftItemEvent event) {
+    public void onCraft(CraftItemEvent event) {
         if (event.getWhoClicked() instanceof Player player) {
             evaluateIfRunning(player, GoalTrigger.ITEM_CRAFT);
         }

@@ -44,8 +44,8 @@ public class ItemCraftGoal implements PlayerGoal, RoundAwareGoal {
     }
 
     @Override
-    public String completionText() {
-        return "Goal complete: Crafted " + amount + " " + item.name().toLowerCase();
+    public String descriptionText() {
+        return "Craft " + amount + " " + item.name().toLowerCase().replace('_', ' ');
     }
 
     @Override

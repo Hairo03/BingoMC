@@ -30,16 +30,14 @@ public final class GoalsViewerGui {
 
         Gui gui = Gui.builder()
             .setStructure(
-                "a b b b c b b b a",
-                "d x x x x x x x d",
-                "d x x x x x x x d",
-                "d x x x x x x x d",
-                "a b b b c b b b a"
+                "# # # # # # # # #",
+                "# x x x x x x x #",
+                "# x x x x x x x #",
+                "# x x x x x x x #",
+                "# x x x x x x x #",
+                "# # # # # # # # #"
             )
-            .addIngredient('a', Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("<dark_gray>")))
-            .addIngredient('b', Item.simple(new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setName("<gray>")))
-            .addIngredient('c', Item.simple(new ItemBuilder(Material.LIME_STAINED_GLASS_PANE).setName("<green><bold>Bingo Goals")))
-            .addIngredient('d', Item.simple(new ItemBuilder(Material.GREEN_STAINED_GLASS_PANE).setName("<dark_green>")))
+            .addIngredient('#', Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("<dark_gray>")))
             .build();
 
         List<Item> goalItems = new ArrayList<>();
@@ -49,9 +47,8 @@ public final class GoalsViewerGui {
             int points = plugin.getGoalManager().getGoalPoints(goal.id());
 
             goalItems.add(Item.simple(new ItemBuilder(icon)
-                .setName((done ? "<green><bold>" : "<yellow><bold>") + goal.id())
+                .setName((done ? "<green><bold>" : "<yellow><bold>") + goal.descriptionText())
                 .addLoreLines(
-                    "<gray>" + goal.completionText(),
                     "<dark_gray>Reward: <aqua><bold>" + points + " pts",
                     done ? "<green><bold>Completed" : "<red><bold>Incomplete"
                 )));
@@ -68,9 +65,9 @@ public final class GoalsViewerGui {
         Window window = Window.builder()
             .setViewer(player)
             .setTitle(
-                Component.text("Bingo Goals", NamedTextColor.DARK_GREEN, TextDecoration.BOLD)
+                Component.text("Bingo Goals", NamedTextColor.BLACK, TextDecoration.BOLD)
                     .append(Component.text(" - ", NamedTextColor.DARK_GRAY))
-                    .append(Component.text(currentPoints + " pts", NamedTextColor.BLUE))
+                    .append(Component.text(currentPoints + " pts", NamedTextColor.DARK_GREEN))
             )
             .setUpperGui(gui)
             .build();

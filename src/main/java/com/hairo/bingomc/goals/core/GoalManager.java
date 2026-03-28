@@ -12,6 +12,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -75,13 +76,15 @@ public class GoalManager {
             if (goal.isComplete(player)) {
                 completed.add(id);
                 int points = pointsByGoalId.getOrDefault(id, 1);
-                player.sendMessage(
-                    Component.text("[Bingo] ", NamedTextColor.GOLD, TextDecoration.BOLD)
-                        .append(Component.text("Goal complete: ", NamedTextColor.GREEN))
-                        .append(Component.text(goal.completionText(), NamedTextColor.WHITE))
-                        .append(Component.text(" (", NamedTextColor.DARK_GRAY))
-                        .append(Component.text("+" + points + " pts", NamedTextColor.AQUA))
-                        .append(Component.text(")", NamedTextColor.DARK_GRAY))
+                Bukkit.broadcast(
+                    Component.text()
+                        .append(Component.text("[Bingo] ", NamedTextColor.GOLD, TextDecoration.BOLD))
+                        .append(Component.text(player.getName() + " completed goal: ", NamedTextColor.GREEN))
+                        .append(Component.text(goal.descriptionText(), NamedTextColor.WHITE, TextDecoration.BOLD))
+                        .append(Component.text(" (", NamedTextColor.DARK_GRAY, TextDecoration.BOLD))
+                        .append(Component.text("+" + points + " pts", NamedTextColor.AQUA, TextDecoration.BOLD))
+                        .append(Component.text(")", NamedTextColor.DARK_GRAY, TextDecoration.BOLD))
+                        .build()
                 );
             }
         }

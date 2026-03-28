@@ -41,7 +41,7 @@ public class ConsumeItemGoal implements PlayerGoal {
     }
 
     @Override
-    public String completionText() {
-        return "Goal complete: Consume " + amount + " " + item.name().toLowerCase();
+    public String descriptionText() {
+        return "Consume " + amount + " " + item.name().toLowerCase().replace('_', ' ');
     }
 }

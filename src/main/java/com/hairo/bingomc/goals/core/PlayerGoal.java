@@ -10,5 +10,5 @@ public interface PlayerGoal {
 
     boolean isComplete(Player player);
 
-    String completionText();
+    String descriptionText();
 }

@@ -11,40 +11,25 @@ import com.hairo.bingomc.gui.GoalsViewerGui;
 import com.hairo.bingomc.gui.NewGameGui;
 import com.hairo.bingomc.listeners.GoalEventListener;
 import com.hairo.bingomc.events.TimerExpiredEvent;
+import com.hairo.bingomc.worlds.BingoWorldService;
+import com.hairo.bingomc.worlds.PlayerWorldSet;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.mvplugins.multiverse.external.vavr.control.Option;
-import org.mvplugins.multiverse.core.MultiverseCoreApi;
-import org.mvplugins.multiverse.core.world.options.CreateWorldOptions;
-import org.mvplugins.multiverse.core.world.options.DeleteWorldOptions;
-import org.mvplugins.multiverse.inventories.MultiverseInventoriesApi;
-import org.mvplugins.multiverse.inventories.profile.group.WorldGroup;
-import org.mvplugins.multiverse.inventories.profile.group.WorldGroupManager;
-import org.mvplugins.multiverse.netherportals.MultiverseNetherPortals;
+import net.kyori.adventure.title.Title;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.PortalType;
 import org.bukkit.World;
-import org.bukkit.World.Environment;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -53,10 +38,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import xyz.xenondevs.invui.InvUI;
 import com.hairo.bingomc.commands.BingoCommand;
-
-
-// TODO: Add InvUI for showing goals and progress
-
 
 public class BingoMC extends JavaPlugin implements Listener {
 
@@ -67,16 +48,12 @@ public class BingoMC extends JavaPlugin implements Listener {
     private boolean timerExpiredHandled;
     private BossBar timerBossBar;
     private final Set<UUID> roundParticipants = new HashSet<>();
-    private final Map<UUID, PlayerWorldSet> activeRoundWorldSets = new HashMap<>();
-    private final Map<UUID, PlayerWorldSet> previousRoundWorldSets = new HashMap<>();
     private GoalConfigService goalConfigService;
     private GoalsViewerGui goalsViewerGui;
     private GoalsAdminGui goalsAdminGui;
     private NewGameGui newGameGui;
     private String mainWorldName;
-    private MultiverseCoreApi multiverseCoreApi;
-    private MultiverseInventoriesApi multiverseInventoriesApi;
-    private MultiverseNetherPortals multiverseNetherPortals;
+    private BingoWorldService worldService;
 
     private static final long GAME_DURATION_SECONDS = 300L;
 
@@ -102,11 +79,11 @@ public class BingoMC extends JavaPlugin implements Listener {
         );
 
         mainWorldName = Bukkit.getWorlds().get(0).getName();
-        if (!initializeMultiverseApis()) {
+        worldService = new BingoWorldService(this);
+        if (!worldService.initializeApis()) {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        //cleanupStaleBingoAutoloadEntries();
 
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new GoalEventListener(this, goalManager, consumeTracker), this);
@@ -149,7 +126,9 @@ public class BingoMC extends JavaPlugin implements Listener {
             timer.stop();
         }
 
-        cleanupManagedBingoWorldsOnShutdown();
+        if (worldService != null) {
+            worldService.cleanupManagedBingoWorldsOnShutdown(mainWorldName);
+        }
 
         if (timerBossBar != null) {
             for (Player player : Bukkit.getOnlinePlayers()) {
@@ -234,9 +213,7 @@ public class BingoMC extends JavaPlugin implements Listener {
             }
         }
 
-        previousRoundWorldSets.clear();
-        previousRoundWorldSets.putAll(activeRoundWorldSets);
-        activeRoundWorldSets.clear();
+        worldService.moveActiveToPreviousRound();
         roundParticipants.clear();
     }
 
@@ -304,13 +281,18 @@ public class BingoMC extends JavaPlugin implements Listener {
             }
 
             Bukkit.getScheduler().runTask(this, () -> {
-                long selectedSeed = newGameGui.getWorldSeed();
-                boolean started = startGame(selectedSeed);
-                if (started) {
-                    sender.sendMessage(prefixed(Component.text("Bingo round started.", NamedTextColor.GREEN)));
-                } else {
-                    sender.sendMessage(prefixed(Component.text("Could not start Bingo round.", NamedTextColor.RED)));
-                }
+                showStartingTitle();
+                Bukkit.getScheduler().runTaskLater(this, () -> {
+                    long selectedSeed = newGameGui.getWorldSeed();
+                    boolean started = startGame(selectedSeed);
+                    clearStartingTitle();
+
+                    if (started) {
+                        sender.sendMessage(prefixed(Component.text("Bingo round started.", NamedTextColor.GREEN)));
+                    } else {
+                        sender.sendMessage(prefixed(Component.text("Could not start Bingo round.", NamedTextColor.RED)));
+                    }
+                }, 1L);
             });
         });
         return true;
@@ -437,38 +419,13 @@ public class BingoMC extends JavaPlugin implements Listener {
             return false;
         }
 
-        if (!cleanupPreviousRoundWorlds()) {
+        var createdWorldSets = worldService.provisionRoundWorldSets(onlinePlayers, worldSeed);
+        if (createdWorldSets == null) {
             return false;
-        }
-
-        long roundToken = System.currentTimeMillis();
-        Map<UUID, PlayerWorldSet> createdWorldSets = new HashMap<>();
-        for (Player player : onlinePlayers) {
-            PlayerWorldSet worldSet = buildPlayerWorldSet(player, roundToken, worldSeed);
-            if (!createPlayerWorldSet(worldSet)) {
-                getLogger().severe("Aborting round start because world setup failed for " + player.getName());
-                cleanupWorldSets(createdWorldSets.values());
-                return false;
-            }
-            createdWorldSets.put(player.getUniqueId(), worldSet);
-
-            if (!configurePlayerPortalLinks(worldSet)) {
-                getLogger().severe("Aborting round start because portal link setup failed for " + player.getName());
-                cleanupWorldSets(createdWorldSets.values());
-                return false;
-            }
-
-            if (!configurePlayerInventoryGroup(worldSet)) {
-                getLogger().severe("Aborting round start because inventory group setup failed for " + player.getName());
-                cleanupWorldSets(createdWorldSets.values());
-                return false;
-            }
         }
 
         goalManager.resetAllProgress();
         roundParticipants.clear();
-        activeRoundWorldSets.clear();
-        activeRoundWorldSets.putAll(createdWorldSets);
 
         for (Player player : onlinePlayers) {
             roundParticipants.add(player.getUniqueId());
@@ -476,16 +433,18 @@ public class BingoMC extends JavaPlugin implements Listener {
             goalManager.onRoundStart(player);
 
             PlayerWorldSet worldSet = createdWorldSets.get(player.getUniqueId());
-            World playerWorld = worldSet == null ? null : Bukkit.getWorld(worldSet.overworldName);
+            World playerWorld = worldSet == null ? null : Bukkit.getWorld(worldSet.overworldName());
             if (playerWorld == null) {
                 getLogger().severe("Player world missing after creation for " + player.getName());
-                cleanupWorldSets(createdWorldSets.values());
-                activeRoundWorldSets.clear();
+                worldService.cleanupWorldSets(createdWorldSets.values());
+                worldService.clearTrackedRoundWorlds();
                 roundParticipants.clear();
                 return false;
             }
             player.teleportAsync(playerWorld.getSpawnLocation());
         }
+
+        worldService.activateRoundWorldSets(createdWorldSets);
 
         timer.reset();
         timer.setLimitSeconds(GAME_DURATION_SECONDS);
@@ -505,8 +464,29 @@ public class BingoMC extends JavaPlugin implements Listener {
             Component.text("Bingo round has started. You have ", NamedTextColor.GREEN)
                 .append(Component.text(formatClock(GAME_DURATION_SECONDS), NamedTextColor.AQUA, TextDecoration.BOLD))
                 .append(Component.text(" minutes.", NamedTextColor.GREEN))
+                .append(Component.text(" Use ", NamedTextColor.YELLOW))
+                .append(Component.text("/bingo goals", NamedTextColor.WHITE, TextDecoration.BOLD))
+                .append(Component.text(" to view your objectives.", NamedTextColor.YELLOW))
         ));
         return true;
+    }
+
+    private void showStartingTitle() {
+        Title startingTitle = Title.title(
+            Component.text("Bingo game starting...", NamedTextColor.GOLD, TextDecoration.BOLD),
+            Component.empty(),
+            Title.Times.times(Duration.ofMillis(150), Duration.ofSeconds(5), Duration.ofMillis(200))
+        );
+
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            onlinePlayer.showTitle(startingTitle);
+        }
+    }
+
+    private void clearStartingTitle() {
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            onlinePlayer.resetTitle();
+        }
     }
 
     private Component bossBarTime(String display) {
@@ -519,390 +499,6 @@ public class BingoMC extends JavaPlugin implements Listener {
             .append(Component.text("[Bingo] ", NamedTextColor.GOLD, TextDecoration.BOLD))
             .append(message)
             .build();
-    }
-
-    private boolean initializeMultiverseApis() {
-        try {
-            multiverseCoreApi = MultiverseCoreApi.get();
-            multiverseInventoriesApi = MultiverseInventoriesApi.get();
-        } catch (IllegalStateException e) {
-            getLogger().severe("Failed to initialize Multiverse API: " + e.getMessage());
-            return false;
-        }
-
-        if (!(getServer().getPluginManager().getPlugin("Multiverse-NetherPortals") instanceof MultiverseNetherPortals plugin)) {
-            getLogger().severe("Multiverse-NetherPortals plugin instance is unavailable.");
-            return false;
-        }
-        multiverseNetherPortals = plugin;
-        return true;
-    }
-
-    private File getMultiverseWorldsFile() {
-        return new File(getDataFolder().getParentFile(), "Multiverse-Core/worlds.yml");
-    }
-
-    private void cleanupManagedBingoWorldsOnShutdown() {
-        Set<String> managedWorldNames = collectManagedBingoWorldNames();
-        if (managedWorldNames.isEmpty()) {
-            return;
-        }
-
-        World mainWorld = Bukkit.getWorld(mainWorldName);
-        if (mainWorld != null) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                World playerWorld = player.getWorld();
-                if (playerWorld != null && managedWorldNames.contains(playerWorld.getName())) {
-                    player.teleport(mainWorld.getSpawnLocation());
-                }
-            }
-        }
-
-        List<PlayerWorldSet> trackedWorldSets = new ArrayList<>();
-        trackedWorldSets.addAll(activeRoundWorldSets.values());
-        trackedWorldSets.addAll(previousRoundWorldSets.values());
-
-        boolean success = removeInventoryGroupsForManagedWorlds(managedWorldNames);
-        success = cleanupWorldSets(trackedWorldSets) && success;
-
-        Set<String> deletedWorldNames = new HashSet<>();
-        for (PlayerWorldSet worldSet : trackedWorldSets) {
-            deletedWorldNames.add(worldSet.overworldName);
-            deletedWorldNames.add(worldSet.netherName);
-            deletedWorldNames.add(worldSet.endName);
-        }
-
-        for (String worldName : managedWorldNames) {
-            if (!deleteWorldIfPresent(worldName, deletedWorldNames)) {
-                success = false;
-            }
-        }
-
-        if (success) {
-            getLogger().info("Deleted all managed Bingo worlds during shutdown.");
-        } else {
-            getLogger().warning("Shutdown completed with one or more Bingo world cleanup failures.");
-        }
-    }
-
-    private boolean removeInventoryGroupsForManagedWorlds(Set<String> managedWorldNames) {
-        WorldGroupManager manager = multiverseInventoriesApi.getWorldGroupManager();
-        Set<String> groupNamesToRemove = new HashSet<>();
-
-        for (String worldName : managedWorldNames) {
-            List<WorldGroup> groupsForWorld = manager.getGroupsForWorld(worldName);
-            if (groupsForWorld == null) {
-                continue;
-            }
-
-            for (WorldGroup group : groupsForWorld) {
-                if (group == null || group.isDefault()) {
-                    continue;
-                }
-                if (isManagedBingoGroup(group, managedWorldNames)) {
-                    groupNamesToRemove.add(group.getName());
-                }
-            }
-        }
-
-        boolean success = true;
-        for (String groupName : groupNamesToRemove) {
-            WorldGroup existing = manager.getGroup(groupName);
-            if (existing == null) {
-                continue;
-            }
-            if (!manager.removeGroup(existing)) {
-                success = false;
-                getLogger().warning("Could not remove inventory group " + groupName + " during shutdown cleanup.");
-            }
-        }
-
-        return success;
-    }
-
-    private boolean isManagedBingoGroup(WorldGroup group, Set<String> managedWorldNames) {
-        if (group.getName().toLowerCase(Locale.ROOT).startsWith("group_bingo_")) {
-            return true;
-        }
-
-        Set<String> configuredWorlds = group.getConfigWorlds();
-        if (configuredWorlds == null || configuredWorlds.isEmpty()) {
-            return false;
-        }
-
-        boolean containsManagedWorld = false;
-        for (String worldName : configuredWorlds) {
-            if (managedWorldNames.contains(worldName)) {
-                containsManagedWorld = true;
-                continue;
-            }
-            return false;
-        }
-
-        return containsManagedWorld;
-    }
-
-    private Set<String> collectManagedBingoWorldNames() {
-        Set<String> worldNames = new HashSet<>();
-
-        for (PlayerWorldSet worldSet : activeRoundWorldSets.values()) {
-            worldNames.add(worldSet.overworldName);
-            worldNames.add(worldSet.netherName);
-            worldNames.add(worldSet.endName);
-        }
-        for (PlayerWorldSet worldSet : previousRoundWorldSets.values()) {
-            worldNames.add(worldSet.overworldName);
-            worldNames.add(worldSet.netherName);
-            worldNames.add(worldSet.endName);
-        }
-
-        for (World world : Bukkit.getWorlds()) {
-            if (isManagedBingoWorldName(world.getName())) {
-                worldNames.add(world.getName());
-            }
-        }
-
-        File worldsFile = getMultiverseWorldsFile();
-        if (worldsFile.exists()) {
-            YamlConfiguration worldsConfig = YamlConfiguration.loadConfiguration(worldsFile);
-            ConfigurationSection worldsSection = worldsConfig.getConfigurationSection("worlds");
-            if (worldsSection != null) {
-                for (String worldName : worldsSection.getKeys(false)) {
-                    if (isManagedBingoWorldName(worldName)) {
-                        worldNames.add(worldName);
-                    }
-                }
-            }
-        }
-
-        return worldNames;
-    }
-
-    private boolean isManagedBingoWorldName(String worldName) {
-        if (worldName == null || !worldName.startsWith("bingo_")) {
-            return false;
-        }
-        return !worldName.equalsIgnoreCase(mainWorldName);
-    }
-
-    private boolean cleanupPreviousRoundWorlds() {
-        if (previousRoundWorldSets.isEmpty()) {
-            return true;
-        }
-
-        boolean success = cleanupWorldSets(previousRoundWorldSets.values());
-        if (success) {
-            previousRoundWorldSets.clear();
-        }
-        return success;
-    }
-
-    private boolean cleanupWorldSets(Iterable<PlayerWorldSet> worldSets) {
-        Set<String> deletedWorldNames = new HashSet<>();
-        boolean success = true;
-
-        for (PlayerWorldSet worldSet : worldSets) {
-            if (!removeInventoryGroup(worldSet.inventoryGroupName)) {
-                success = false;
-            }
-
-            if (!deleteWorldIfPresent(worldSet.overworldName, deletedWorldNames)) {
-                success = false;
-            }
-            if (!deleteWorldIfPresent(worldSet.netherName, deletedWorldNames)) {
-                success = false;
-            }
-            if (!deleteWorldIfPresent(worldSet.endName, deletedWorldNames)) {
-                success = false;
-            }
-        }
-
-        return success;
-    }
-
-    private boolean deleteWorldIfPresent(String worldName, Set<String> deletedWorldNames) {
-        if (deletedWorldNames.contains(worldName)) {
-            return true;
-        }
-
-        boolean folderExists = isWorldFolderPresent(worldName);
-        Option<org.mvplugins.multiverse.core.world.MultiverseWorld> worldOption = multiverseCoreApi.getWorldManager().getWorld(worldName);
-        if (worldOption.isEmpty()) {
-            if (folderExists && !deleteWorldFolder(worldName)) {
-                getLogger().severe("Failed deleting unregistered world folder " + worldName);
-                return false;
-            }
-            deletedWorldNames.add(worldName);
-            return true;
-        }
-
-        final boolean[] failed = new boolean[] { false };
-        multiverseCoreApi.getWorldManager()
-            .deleteWorld(DeleteWorldOptions.world(worldOption.get()))
-            .onFailure(reason -> {
-                // If files were manually deleted, treat stale Multiverse metadata as non-blocking.
-                if (!folderExists && Bukkit.getWorld(worldName) == null) {
-                    getLogger().warning("World folder for " + worldName + " is already missing; ignoring delete failure: " + reason);
-                    return;
-                }
-
-                if (Bukkit.getWorld(worldName) == null && deleteWorldFolder(worldName)) {
-                    getLogger().warning("Delete API failed for " + worldName + ", but world folder was removed directly: " + reason);
-                    return;
-                }
-
-                failed[0] = true;
-                getLogger().severe("Failed deleting world " + worldName + ": " + reason);
-            });
-
-        if (!failed[0]) {
-            deletedWorldNames.add(worldName);
-        }
-        return !failed[0];
-    }
-
-    private boolean isWorldFolderPresent(String worldName) {
-        File worldFolder = new File(Bukkit.getWorldContainer(), worldName);
-        return worldFolder.exists();
-    }
-
-    private boolean deleteWorldFolder(String worldName) {
-        Path worldFolder = new File(Bukkit.getWorldContainer(), worldName).toPath();
-        if (!Files.exists(worldFolder)) {
-            return true;
-        }
-
-        try (var paths = Files.walk(worldFolder)) {
-            paths.sorted((left, right) -> right.compareTo(left)).forEach(path -> {
-                try {
-                    Files.deleteIfExists(path);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            return true;
-        } catch (RuntimeException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof IOException ioException) {
-                getLogger().severe("Failed deleting world folder " + worldName + ": " + ioException.getMessage());
-                return false;
-            }
-            throw e;
-        } catch (IOException e) {
-            getLogger().severe("Failed walking world folder " + worldName + ": " + e.getMessage());
-            return false;
-        }
-    }
-
-    private boolean removeInventoryGroup(String groupName) {
-        WorldGroupManager manager = multiverseInventoriesApi.getWorldGroupManager();
-        WorldGroup existing = manager.getGroup(groupName);
-        if (existing == null) {
-            return true;
-        }
-        boolean removed = manager.removeGroup(existing);
-        if (!removed) {
-            getLogger().warning("Could not remove inventory group " + groupName);
-        }
-        return removed;
-    }
-
-    private boolean createPlayerWorldSet(PlayerWorldSet worldSet) {
-        return createWorld(worldSet.overworldName, Environment.NORMAL, worldSet.seed)
-            && createWorld(worldSet.netherName, Environment.NETHER, worldSet.seed)
-            && createWorld(worldSet.endName, Environment.THE_END, worldSet.seed);
-    }
-
-    private boolean createWorld(String worldName, Environment environment, long seed) {
-        final boolean[] failed = new boolean[] { false };
-        multiverseCoreApi.getWorldManager()
-            .createWorld(CreateWorldOptions.worldName(worldName)
-                .seed(seed)
-                .environment(environment)
-                .generateStructures(true)
-                .useSpawnAdjust(true)
-                .doFolderCheck(true))
-            .onFailure(reason -> {
-                failed[0] = true;
-                getLogger().severe("Failed creating world " + worldName + ": " + reason);
-            });
-
-        if (failed[0]) {
-            return false;
-        }
-
-        World world = Bukkit.getWorld(worldName);
-        if (world == null) {
-            getLogger().severe("World creation returned success but Bukkit world is missing: " + worldName);
-            return false;
-        }
-        return true;
-    }
-
-    private boolean configurePlayerPortalLinks(PlayerWorldSet worldSet) {
-        boolean netherForward = multiverseNetherPortals.addWorldLink(worldSet.overworldName, worldSet.netherName, PortalType.NETHER);
-        boolean netherBackward = multiverseNetherPortals.addWorldLink(worldSet.netherName, worldSet.overworldName, PortalType.NETHER);
-        boolean endForward = multiverseNetherPortals.addWorldLink(worldSet.overworldName, worldSet.endName, PortalType.ENDER);
-        boolean endBackward = multiverseNetherPortals.addWorldLink(worldSet.endName, worldSet.overworldName, PortalType.ENDER);
-
-        if (!netherForward || !netherBackward || !endForward || !endBackward) {
-            getLogger().severe("Failed linking personal portal worlds for " + worldSet.overworldName);
-            return false;
-        }
-
-        return multiverseNetherPortals.saveMVNPConfig();
-    }
-
-    private boolean configurePlayerInventoryGroup(PlayerWorldSet worldSet) {
-        try {
-            WorldGroupManager manager = multiverseInventoriesApi.getWorldGroupManager();
-
-            WorldGroup oldGroup = manager.getGroup(worldSet.inventoryGroupName);
-            if (oldGroup != null) {
-                manager.removeGroup(oldGroup);
-            }
-
-            WorldGroup group = manager.newEmptyGroup(worldSet.inventoryGroupName);
-            group.addWorld(worldSet.overworldName, false);
-            group.addWorld(worldSet.netherName, false);
-            group.addWorld(worldSet.endName, false);
-            manager.updateGroup(group);
-            return true;
-        } catch (Exception e) {
-            getLogger().severe("Failed configuring inventory group " + worldSet.inventoryGroupName + ": " + e.getMessage());
-            return false;
-        }
-    }
-
-    private PlayerWorldSet buildPlayerWorldSet(Player player, long roundToken, long worldSeed) {
-        String uuid = player.getUniqueId().toString().replace("-", "");
-        String shortUuid = uuid.substring(0, 8);
-        String roundId = Long.toString(roundToken, 36);
-        String base = ("bingo_" + shortUuid + "_" + roundId).toLowerCase(Locale.ROOT);
-
-        return new PlayerWorldSet(
-            base,
-            base + "_nether",
-            base + "_the_end",
-            "group_" + base,
-            worldSeed
-        );
-    }
-
-    private static final class PlayerWorldSet {
-        private final String overworldName;
-        private final String netherName;
-        private final String endName;
-        private final String inventoryGroupName;
-        private final long seed;
-
-        private PlayerWorldSet(String overworldName, String netherName, String endName, String inventoryGroupName, long seed) {
-            this.overworldName = overworldName;
-            this.netherName = netherName;
-            this.endName = endName;
-            this.inventoryGroupName = inventoryGroupName;
-            this.seed = seed;
-        }
     }
 
 }
