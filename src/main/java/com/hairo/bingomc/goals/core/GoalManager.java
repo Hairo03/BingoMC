@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -72,7 +74,15 @@ public class GoalManager {
 
             if (goal.isComplete(player)) {
                 completed.add(id);
-                player.sendMessage(Component.text(goal.completionText()));
+                int points = pointsByGoalId.getOrDefault(id, 1);
+                player.sendMessage(
+                    Component.text("[Bingo] ", NamedTextColor.GOLD, TextDecoration.BOLD)
+                        .append(Component.text("Goal complete: ", NamedTextColor.GREEN))
+                        .append(Component.text(goal.completionText(), NamedTextColor.WHITE))
+                        .append(Component.text(" (", NamedTextColor.DARK_GRAY))
+                        .append(Component.text("+" + points + " pts", NamedTextColor.AQUA))
+                        .append(Component.text(")", NamedTextColor.DARK_GRAY))
+                );
             }
         }
     }

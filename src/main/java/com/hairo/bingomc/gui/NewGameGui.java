@@ -6,6 +6,9 @@ import java.util.Locale;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.item.BoundItem;
 import xyz.xenondevs.invui.item.Item;
@@ -24,9 +27,9 @@ public final class NewGameGui {
         CompletableFuture<Boolean> result = new CompletableFuture<>();
 
         BoundItem confirm = BoundItem.builder()
-                .setItemProvider(new ItemBuilder(Material.GREEN_WOOL)
-                        .setName("<green>Yes")
-                        .addLoreLines("<gray>Create new world with seed."))
+            .setItemProvider(new ItemBuilder(Material.EMERALD)
+            .setName("<green><bold>Start Round")
+            .addLoreLines("<gray>Create a fresh Bingo world", "<gray>with the entered seed."))
                 .addClickHandler((item, gui, click) -> {
                     player.closeInventory();
                     gui.closeForAllViewers();
@@ -35,9 +38,9 @@ public final class NewGameGui {
                 .build();
 
         BoundItem cancel = BoundItem.builder()
-                .setItemProvider(new ItemBuilder(Material.RED_WOOL)
-                        .setName("<red>No")
-                        .addLoreLines("<gray>Cancel world creation."))
+            .setItemProvider(new ItemBuilder(Material.BARRIER)
+                .setName("<red><bold>Cancel")
+                .addLoreLines("<gray>Abort this round setup."))
                 .addClickHandler((item, gui, click) -> {
                     player.closeInventory();
                     gui.closeForAllViewers();
@@ -47,11 +50,14 @@ public final class NewGameGui {
 
         Gui gui = Gui.builder()
                 .setStructure(
-                "# # # # # # # # #",
-                "# # # n # y # # #",
-                "# # # # # # # # #",
-                "# # # # # # # # #")
-                .addIngredient('#', Item.simple(new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setName("<gray>")))
+            "a b b b c b b b a",
+            "a # # n # y # # a",
+            "a # # # # # # # a",
+            "a b b b c b b b a")
+            .addIngredient('a', Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("<dark_gray>")))
+            .addIngredient('b', Item.simple(new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setName("<gray>")))
+            .addIngredient('c', Item.simple(new ItemBuilder(Material.GREEN_STAINED_GLASS_PANE).setName("<green><bold>Seed Setup")))
+            .addIngredient('#', Item.simple(new ItemBuilder(Material.LIGHT_GRAY_STAINED_GLASS_PANE).setName("<gray>")))
                 .addIngredient('n', cancel)
                 .addIngredient('y', confirm)
                 .build();
@@ -59,6 +65,8 @@ public final class NewGameGui {
         AnvilWindow.builder()
                 .setViewer(player)
                 .setLowerGui(gui)
+            .setTitle(
+                Component.text("Enter world seed:", NamedTextColor.DARK_GREEN, TextDecoration.BOLD))
                 .addRenameHandler(seed -> worldSeed = parseSeed(seed))
                 .open(player);
         return result;

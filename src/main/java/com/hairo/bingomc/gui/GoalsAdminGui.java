@@ -22,26 +22,30 @@ public final class GoalsAdminGui {
 
         Gui gui = Gui.builder()
             .setStructure(
-                "# # # # # # # # #",
-                "# x x x x x x x #",
-                "# x x x x x x x #",
-                "# x x x x x x x #",
-                "# # # # # # # # #"
+                "a b b b c b b b a",
+                "d x x x x x x x d",
+                "d x x x x x x x d",
+                "d x x x x x x x d",
+                "a b b b c b b b a"
             )
-            .addIngredient('#', Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("<gray>")))
+            .addIngredient('a', Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("<dark_gray>")))
+            .addIngredient('b', Item.simple(new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setName("<gray>")))
+            .addIngredient('c', Item.simple(new ItemBuilder(Material.BLUE_STAINED_GLASS_PANE).setName("<blue><bold>Admin Tools")))
+            .addIngredient('d', Item.simple(new ItemBuilder(Material.LIGHT_BLUE_STAINED_GLASS_PANE).setName("<blue>")))
             .build();
 
         int maxItems = 21;
         for (int i = 0; i < Math.min(goals.size(), maxItems); i++) {
             PlayerGoal goal = goals.get(i);
             int points = plugin.getGoalManager().getGoalPoints(goal.id());
-            Item item = Item.simple(new ItemBuilder(Material.BOOK)
-                .setName("<gold>" + goal.id())
+            Item item = Item.simple(new ItemBuilder(Material.WRITABLE_BOOK)
+                .setName("<gold><bold>" + goal.id())
                 .addLoreLines(
                     "<gray>" + goal.completionText(),
-                    "<gray>Points: <white>" + points,
-                    "<yellow>Editing UI actions are being implemented.",
-                    "<yellow>Use /bingo goals validate or /bingo goals reload for now."
+                    "<dark_gray>Reward: <aqua><bold>" + points + " pts",
+                    "<yellow>Editing actions are still in progress.",
+                    "<gray>Use <white>/bingo goals validate",
+                    "<gray>or <white>/bingo goals reload."
                 ));
 
             int row = 1 + (i / 7);
@@ -51,7 +55,7 @@ public final class GoalsAdminGui {
 
         Window.builder()
             .setViewer(player)
-            .setTitle("Bingo Goals Admin")
+            .setTitle("<dark_green><bold>Bingo Goals <blue>Admin")
             .setUpperGui(gui)
             .build()
             .open();

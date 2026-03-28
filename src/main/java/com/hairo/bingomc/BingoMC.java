@@ -13,6 +13,8 @@ import com.hairo.bingomc.listeners.GoalEventListener;
 import com.hairo.bingomc.events.TimerExpiredEvent;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.mvplugins.multiverse.external.vavr.control.Option;
 import org.mvplugins.multiverse.core.MultiverseCoreApi;
 import org.mvplugins.multiverse.core.world.options.CreateWorldOptions;
@@ -93,7 +95,7 @@ public class BingoMC extends JavaPlugin implements Listener {
         gameRunning = false;
         timerExpiredHandled = false;
         timerBossBar = BossBar.bossBar(
-            Component.text("Time left: 00:00"),
+            bossBarTime("00:00"),
             0.0f,
             BossBar.Color.BLUE,
             BossBar.Overlay.PROGRESS
@@ -160,11 +162,18 @@ public class BingoMC extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        player.sendMessage(Component.text("Hello " + player.getName() + ", welcome to BingoMC!"));
+        player.sendMessage(prefixed(
+            Component.text("Welcome, ", NamedTextColor.GREEN)
+                .append(Component.text(player.getName(), NamedTextColor.AQUA, TextDecoration.BOLD))
+                .append(Component.text("!", NamedTextColor.GREEN))
+        ));
         getLogger().info(player.getName() + " joined the server");
 
         if (timerBossBar != null && gameRunning) {
-            player.sendMessage(Component.text("A round is currently running. You will be able to join next round."));
+            player.sendMessage(prefixed(Component.text(
+                "A round is currently running. You can join in the next round.",
+                NamedTextColor.YELLOW
+            )));
         }
     }
 
@@ -190,15 +199,15 @@ public class BingoMC extends JavaPlugin implements Listener {
             }
         }
 
-        Bukkit.broadcast(Component.text(broadcastMessage));
+        Bukkit.broadcast(prefixed(Component.text(broadcastMessage, NamedTextColor.YELLOW)));
         getLogger().info(logMessage);
 
         List<UUID> ranking = new ArrayList<>(roundParticipants);
         ranking.sort(Comparator.comparingInt((UUID playerId) -> goalManager.getPoints(playerId)).reversed());
 
-        Bukkit.broadcast(Component.text("Final scores:"));
+        Bukkit.broadcast(prefixed(Component.text("Final Scores", NamedTextColor.GOLD, TextDecoration.BOLD)));
         if (ranking.isEmpty()) {
-            Bukkit.broadcast(Component.text("No participants in this round."));
+            Bukkit.broadcast(prefixed(Component.text("No participants in this round.", NamedTextColor.GRAY)));
         } else {
             int rank = 1;
             for (UUID playerId : ranking) {
@@ -207,14 +216,19 @@ public class BingoMC extends JavaPlugin implements Listener {
                     name = playerId.toString();
                 }
                 int points = goalManager.getPoints(playerId);
-                Bukkit.broadcast(Component.text(rank + ". " + name + " - " + points + " pts"));
+                Bukkit.broadcast(prefixed(
+                    Component.text(rank + ". ", NamedTextColor.YELLOW)
+                        .append(Component.text(name, NamedTextColor.WHITE))
+                        .append(Component.text(" - ", NamedTextColor.DARK_GRAY))
+                        .append(Component.text(points + " pts", NamedTextColor.AQUA))
+                ));
                 rank++;
             }
         }
 
         if (timerBossBar != null) {
             timerBossBar.progress(0.0f);
-            timerBossBar.name(Component.text("Time left: 00:00"));
+            timerBossBar.name(bossBarTime("00:00"));
             for (Player player : Bukkit.getOnlinePlayers()) {
                 player.hideBossBar(timerBossBar);
             }
@@ -242,7 +256,7 @@ public class BingoMC extends JavaPlugin implements Listener {
             float progress = (float) ((double) timer.getRemainingMillis() / (double) timer.getLimitMillis());
             progress = Math.max(0.0f, Math.min(1.0f, progress));
             timerBossBar.progress(progress);
-            timerBossBar.name(Component.text("Time left: " + display));
+            timerBossBar.name(bossBarTime(display));
         }
     }
 
@@ -253,33 +267,39 @@ public class BingoMC extends JavaPlugin implements Listener {
     }
 
     public void sendBingoUsage(CommandSender sender) {
-        sender.sendMessage(Component.text("Usage: /bingo <start|stop|goals>"));
+        sender.sendMessage(prefixed(
+            Component.text("Usage: ", NamedTextColor.GRAY)
+                .append(Component.text("/bingo <start|stop|goals>", NamedTextColor.AQUA))
+        ));
     }
 
     public void sendGoalsUsage(CommandSender sender) {
-        sender.sendMessage(Component.text("Usage: /bingo goals [admin|validate|reload]"));
+        sender.sendMessage(prefixed(
+            Component.text("Usage: ", NamedTextColor.GRAY)
+                .append(Component.text("/bingo goals [admin|validate|reload]", NamedTextColor.AQUA))
+        ));
     }
 
     public boolean handleStartCommand(CommandSender sender) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("Only players can use /bingo start."));
+            sender.sendMessage(prefixed(Component.text("Only players can use /bingo start.", NamedTextColor.RED)));
             return true;
         }
         if (!player.isOp()) {
-            sender.sendMessage(Component.text("Only operators can start a Bingo round."));
+            sender.sendMessage(prefixed(Component.text("Only operators can start a Bingo round.", NamedTextColor.RED)));
             return true;
         }
         if (gameRunning) {
-            sender.sendMessage(Component.text("A Bingo round is already running."));
+            sender.sendMessage(prefixed(Component.text("A Bingo round is already running.", NamedTextColor.YELLOW)));
             return true;
         }
         if (Bukkit.getOnlinePlayers().isEmpty()) {
-            sender.sendMessage(Component.text("Cannot start: no players are online."));
+            sender.sendMessage(prefixed(Component.text("Cannot start: no players are online.", NamedTextColor.RED)));
             return true;
         }
         newGameGui.open(player).thenAccept(confirmed -> {
             if (!confirmed) {
-                sender.sendMessage(Component.text("Bingo round start cancelled."));
+                sender.sendMessage(prefixed(Component.text("Bingo round start cancelled.", NamedTextColor.YELLOW)));
                 return;
             }
 
@@ -287,9 +307,9 @@ public class BingoMC extends JavaPlugin implements Listener {
                 long selectedSeed = newGameGui.getWorldSeed();
                 boolean started = startGame(selectedSeed);
                 if (started) {
-                    sender.sendMessage(Component.text("Bingo round started."));
+                    sender.sendMessage(prefixed(Component.text("Bingo round started.", NamedTextColor.GREEN)));
                 } else {
-                    sender.sendMessage(Component.text("Could not start Bingo round."));
+                    sender.sendMessage(prefixed(Component.text("Could not start Bingo round.", NamedTextColor.RED)));
                 }
             });
         });
@@ -298,11 +318,11 @@ public class BingoMC extends JavaPlugin implements Listener {
 
     public boolean handleStopCommand(CommandSender sender) {
         if (sender instanceof Player player && !player.isOp()) {
-            sender.sendMessage(Component.text("Only operators can stop a Bingo round."));
+            sender.sendMessage(prefixed(Component.text("Only operators can stop a Bingo round.", NamedTextColor.RED)));
             return true;
         }
         if (!gameRunning) {
-            sender.sendMessage(Component.text("No Bingo round is currently running."));
+            sender.sendMessage(prefixed(Component.text("No Bingo round is currently running.", NamedTextColor.YELLOW)));
             return true;
         }
 
@@ -315,13 +335,13 @@ public class BingoMC extends JavaPlugin implements Listener {
             "Bingo round stopped early by " + sender.getName() + ".",
             "Bingo round stopped early by " + sender.getName() + "."
         );
-        sender.sendMessage(Component.text("Bingo round stopped."));
+        sender.sendMessage(prefixed(Component.text("Bingo round stopped.", NamedTextColor.GREEN)));
         return true;
     }
 
     public boolean handleGoalsViewCommand(CommandSender sender) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("Only players can open the goals UI."));
+            sender.sendMessage(prefixed(Component.text("Only players can open the goals UI.", NamedTextColor.RED)));
             return true;
         }
         goalsViewerGui.open(player);
@@ -330,11 +350,11 @@ public class BingoMC extends JavaPlugin implements Listener {
 
     public boolean handleGoalsAdminCommand(CommandSender sender) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("Only players can open the admin UI."));
+            sender.sendMessage(prefixed(Component.text("Only players can open the admin UI.", NamedTextColor.RED)));
             return true;
         }
         if (!player.hasPermission("bingomc.goals.admin")) {
-            player.sendMessage(Component.text("You do not have permission to manage goals."));
+            player.sendMessage(prefixed(Component.text("You do not have permission to manage goals.", NamedTextColor.RED)));
             return true;
         }
         goalsAdminGui.open(player);
@@ -344,11 +364,15 @@ public class BingoMC extends JavaPlugin implements Listener {
     public boolean handleGoalsValidateCommand(CommandSender sender) {
         GoalLoadResult result = goalConfigService.loadGoals();
         if (result.isValid()) {
-            sender.sendMessage(Component.text("goals.yml is valid. Loaded " + result.goals().size() + " enabled goals."));
+            sender.sendMessage(prefixed(
+                Component.text("goals.yml is valid. Loaded ", NamedTextColor.GREEN)
+                    .append(Component.text(result.goals().size(), NamedTextColor.AQUA))
+                    .append(Component.text(" enabled goals.", NamedTextColor.GREEN))
+            ));
         } else {
-            sender.sendMessage(Component.text("goals.yml has validation errors:"));
+            sender.sendMessage(prefixed(Component.text("goals.yml has validation errors:", NamedTextColor.RED)));
             for (String error : result.errors()) {
-                sender.sendMessage(Component.text("- " + error));
+                sender.sendMessage(prefixed(Component.text("- " + error, NamedTextColor.GRAY)));
             }
         }
         return true;
@@ -356,15 +380,18 @@ public class BingoMC extends JavaPlugin implements Listener {
 
     public boolean handleGoalsReloadCommand(CommandSender sender) {
         if (sender instanceof Player player && !player.hasPermission("bingomc.goals.admin")) {
-            sender.sendMessage(Component.text("You do not have permission to reload goals."));
+            sender.sendMessage(prefixed(Component.text("You do not have permission to reload goals.", NamedTextColor.RED)));
             return true;
         }
         if (gameRunning) {
-            sender.sendMessage(Component.text("Cannot reload goals while a round is running."));
+            sender.sendMessage(prefixed(Component.text("Cannot reload goals while a round is running.", NamedTextColor.YELLOW)));
             return true;
         }
         boolean loaded = reloadGoalsFromDisk(false);
-        sender.sendMessage(Component.text(loaded ? "Goals reloaded." : "Could not reload goals; see console for details."));
+        sender.sendMessage(prefixed(Component.text(
+            loaded ? "Goals reloaded." : "Could not reload goals; see console for details.",
+            loaded ? NamedTextColor.GREEN : NamedTextColor.RED
+        )));
         return true;
     }
 
@@ -468,14 +495,30 @@ public class BingoMC extends JavaPlugin implements Listener {
 
         if (timerBossBar != null) {
             timerBossBar.progress(1.0f);
-            timerBossBar.name(Component.text("Time left: " + formatClock(GAME_DURATION_SECONDS)));
+            timerBossBar.name(bossBarTime(formatClock(GAME_DURATION_SECONDS)));
             for (Player player : Bukkit.getOnlinePlayers()) {
                 player.showBossBar(timerBossBar);
             }
         }
 
-        Bukkit.broadcast(Component.text("Bingo round has started. You have " + formatClock(GAME_DURATION_SECONDS) + " minutes."));
+        Bukkit.broadcast(prefixed(
+            Component.text("Bingo round has started. You have ", NamedTextColor.GREEN)
+                .append(Component.text(formatClock(GAME_DURATION_SECONDS), NamedTextColor.AQUA, TextDecoration.BOLD))
+                .append(Component.text(" minutes.", NamedTextColor.GREEN))
+        ));
         return true;
+    }
+
+    private Component bossBarTime(String display) {
+        return Component.text("Time Left: ", NamedTextColor.AQUA)
+            .append(Component.text(display, NamedTextColor.WHITE, TextDecoration.BOLD));
+    }
+
+    private Component prefixed(Component message) {
+        return Component.text()
+            .append(Component.text("[Bingo] ", NamedTextColor.GOLD, TextDecoration.BOLD))
+            .append(message)
+            .build();
     }
 
     private boolean initializeMultiverseApis() {
