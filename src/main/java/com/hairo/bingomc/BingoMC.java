@@ -104,7 +104,7 @@ public class BingoMC extends JavaPlugin implements Listener {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        cleanupStaleBingoAutoloadEntries();
+        //cleanupStaleBingoAutoloadEntries();
 
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new GoalEventListener(this, goalManager, consumeTracker), this);
@@ -494,45 +494,6 @@ public class BingoMC extends JavaPlugin implements Listener {
         multiverseNetherPortals = plugin;
         return true;
     }
-
-    // private void cleanupStaleBingoAutoloadEntries() {
-    //     File worldsFile = getMultiverseWorldsFile();
-    //     if (!worldsFile.exists()) {
-    //         return;
-    //     }
-
-    //     YamlConfiguration worldsConfig = YamlConfiguration.loadConfiguration(worldsFile);
-    //     ConfigurationSection worldsSection = worldsConfig.getConfigurationSection("worlds");
-    //     if (worldsSection == null) {
-    //         getLogger().warning("Multiverse-Core worlds.yml is missing 'worlds' section; cannot clean up stale Bingo world entries.");
-    //         return;
-    //     }
-
-    //     Set<String> worldNames = new HashSet<>(worldsSection.getKeys(false));
-    //     int removed = 0;
-    //     for (String worldName : worldNames) {
-    //         if (!isManagedBingoWorldName(worldName)) {
-    //             continue;
-    //         }
-    //         if (isWorldFolderPresent(worldName)) {
-    //             continue;
-    //         }
-
-    //         worldsSection.set(worldName, null);
-    //         removed++;
-    //     }
-
-    //     if (removed == 0) {
-    //         return;
-    //     }
-
-    //     try {
-    //         worldsConfig.save(worldsFile);
-    //         getLogger().warning("Removed " + removed + " stale Bingo world entries from Multiverse-Core worlds.yml");
-    //     } catch (Exception e) {
-    //         getLogger().severe("Failed to save cleaned Multiverse-Core worlds.yml: " + e.getMessage());
-    //     }
-    // }
 
     private File getMultiverseWorldsFile() {
         return new File(getDataFolder().getParentFile(), "Multiverse-Core/worlds.yml");
