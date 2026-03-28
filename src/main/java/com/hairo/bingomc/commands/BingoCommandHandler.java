@@ -1,7 +1,7 @@
 package com.hairo.bingomc.commands;
 
-import com.hairo.bingomc.goals.config.GoalConfigService;
 import com.hairo.bingomc.goals.config.GoalLoadResult;
+import com.hairo.bingomc.goals.config.GoalsService;
 import com.hairo.bingomc.gui.GoalsAdminGui;
 import com.hairo.bingomc.gui.GoalsViewerGui;
 import com.hairo.bingomc.gui.NewGameGui;
@@ -13,37 +13,33 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
 public class BingoCommandHandler {
 
     private final JavaPlugin plugin;
     private final RoundService roundService;
-    private final GoalConfigService goalConfigService;
+    private final GoalsService goalsService;
     private final GoalsViewerGui goalsViewerGui;
     private final GoalsAdminGui goalsAdminGui;
     private final NewGameGui newGameGui;
-    private final BooleanSupplier goalsReload;
     private final Function<Component, Component> prefixer;
 
     public BingoCommandHandler(
         JavaPlugin plugin,
         RoundService roundService,
-        GoalConfigService goalConfigService,
+        GoalsService goalsService,
         GoalsViewerGui goalsViewerGui,
         GoalsAdminGui goalsAdminGui,
         NewGameGui newGameGui,
-        BooleanSupplier goalsReload,
         Function<Component, Component> prefixer
     ) {
         this.plugin = plugin;
         this.roundService = roundService;
-        this.goalConfigService = goalConfigService;
+        this.goalsService = goalsService;
         this.goalsViewerGui = goalsViewerGui;
         this.goalsAdminGui = goalsAdminGui;
         this.newGameGui = newGameGui;
-        this.goalsReload = goalsReload;
         this.prefixer = prefixer;
     }
 
@@ -135,7 +131,7 @@ public class BingoCommandHandler {
     }
 
     public boolean handleGoalsValidateCommand(CommandSender sender) {
-        GoalLoadResult result = goalConfigService.loadGoals();
+        GoalLoadResult result = goalsService.validateGoals();
         if (result.isValid()) {
             sender.sendMessage(prefixer.apply(
                 Component.text("goals.yml is valid. Loaded ", NamedTextColor.GREEN)
@@ -162,7 +158,7 @@ public class BingoCommandHandler {
             return true;
         }
 
-        boolean loaded = goalsReload.getAsBoolean();
+        boolean loaded = goalsService.reloadGoals(false);
         sender.sendMessage(prefixer.apply(Component.text(
             loaded ? "Goals reloaded." : "Could not reload goals; see console for details.",
             loaded ? NamedTextColor.GREEN : NamedTextColor.RED

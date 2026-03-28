@@ -3,6 +3,7 @@ package com.hairo.bingomc.goals.config;
 import com.hairo.bingomc.goals.impl.BlockCountGoal;
 import com.hairo.bingomc.goals.impl.ConsumeItemGoal;
 import com.hairo.bingomc.goals.impl.ItemCraftGoal;
+import com.hairo.bingomc.goals.impl.ObtainItemGoal;
 import com.hairo.bingomc.goals.impl.UseVehicleGoal;
 import com.hairo.bingomc.goals.util.ConsumeTracker;
 import java.io.File;
@@ -21,9 +22,23 @@ public final class GoalConfigService {
     private final JavaPlugin plugin;
     private final ConsumeTracker consumeTracker;
 
+    @FunctionalInterface
+    private interface GoalFactory {
+        LoadedGoal create(String id, int points, Map<?, ?> section);
+    }
+
+    private final Map<String, GoalFactory> factories;
+
     public GoalConfigService(JavaPlugin plugin, ConsumeTracker consumeTracker) {
         this.plugin = plugin;
         this.consumeTracker = consumeTracker;
+        this.factories = Map.of(
+            "block_count", (id, points, section) -> new LoadedGoal(new BlockCountGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points),
+            "craft_item", (id, points, section) -> new LoadedGoal(new ItemCraftGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points),
+            "consume_item", (id, points, section) -> new LoadedGoal(new ConsumeItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), consumeTracker), points),
+            "use_vehicle", (id, points, section) -> new LoadedGoal(new UseVehicleGoal(id, parseEntityType(section, "entity_type")), points),
+            "obtain_item", (id, points, section) -> new LoadedGoal(new ObtainItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points))
+        );
     }
 
     public GoalLoadResult loadGoals() {
@@ -63,26 +78,7 @@ public final class GoalConfigService {
             String type = readString(section, "type").trim().toLowerCase(Locale.ROOT);
 
             try {
-                LoadedGoal goal = switch (type) {
-                    case "block_count" -> new LoadedGoal(
-                        new BlockCountGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)),
-                        points
-                    );
-                    case "craft_item" -> new LoadedGoal(
-                        new ItemCraftGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)),
-                        points
-                    );
-                    case "consume_item" -> new LoadedGoal(
-                        new ConsumeItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), consumeTracker),
-                        points
-                    );
-                    case "use_vehicle" -> new LoadedGoal(
-                        new UseVehicleGoal(id, parseEntityType(section, "entity_type")),
-                        points
-                    );
-                    default -> throw new IllegalArgumentException("Unsupported goal type: " + type);
-                };
-
+                LoadedGoal goal = createGoal(id, type, points, section);
                 loaded.add(goal);
             } catch (IllegalArgumentException ex) {
                 errors.add("goals[" + i + "] (" + id + "): " + ex.getMessage());
@@ -96,7 +92,15 @@ public final class GoalConfigService {
         return new GoalLoadResult(loaded, errors);
     }
 
-    private String readString(Map<?, ?> section, String key) {
+    private LoadedGoal createGoal(String id, String type, int points, Map<?,?> section) {
+		GoalFactory factory = factories.get(type);
+        if (factory == null) {
+            throw new IllegalArgumentException("Unknown goal type: " + type);
+        }
+        return factory.create(id, points, section);
+	}
+
+	private String readString(Map<?, ?> section, String key) {
         Object value = section.get(key);
         return value == null ? "" : String.valueOf(value);
     }

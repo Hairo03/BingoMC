@@ -50,12 +50,11 @@ public final class NewGameGui {
 
         Gui gui = Gui.builder()
                 .setStructure(
-            "# # # # z # # # #",
+            "# # # # # # # # #",
             "# # # n # y # # #",
             "# # # # # # # # #",
             "# # # # # # # # #")
             .addIngredient('#', Item.simple(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("<dark_gray>")))
-            .addIngredient('z', Item.simple(new ItemBuilder(Material.GREEN_STAINED_GLASS_PANE).setName("<green><bold>Seed Setup")))
                 .addIngredient('n', cancel)
                 .addIngredient('y', confirm)
                 .build();

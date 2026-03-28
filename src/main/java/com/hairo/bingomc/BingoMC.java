@@ -2,7 +2,7 @@ package com.hairo.bingomc;
 
 import com.hairo.bingomc.goals.core.GoalManager;
 import com.hairo.bingomc.goals.config.GoalConfigService;
-import com.hairo.bingomc.goals.config.GoalLoadResult;
+import com.hairo.bingomc.goals.config.GoalsService;
 import com.hairo.bingomc.goals.util.ConsumeTracker;
 import com.hairo.bingomc.commands.BingoCommandHandler;
 import com.hairo.bingomc.gui.GoalsAdminGui;
@@ -30,10 +30,10 @@ public class BingoMC extends JavaPlugin implements Listener {
 
     private final GoalManager goalManager = new GoalManager();
     private ConsumeTracker consumeTracker;
-    private GoalConfigService goalConfigService;
     private GoalsViewerGui goalsViewerGui;
     private GoalsAdminGui goalsAdminGui;
     private NewGameGui newGameGui;
+    private GoalsService goalsService;
     private RoundService roundService;
     private BingoCommandHandler commandHandler;
 
@@ -42,7 +42,8 @@ public class BingoMC extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         consumeTracker = new ConsumeTracker(this);
-        goalConfigService = new GoalConfigService(this, consumeTracker);
+        GoalConfigService goalConfigService = new GoalConfigService(this, consumeTracker);
+        goalsService = new GoalsService(this, goalConfigService, goalManager);
         goalsViewerGui = new GoalsViewerGui(this);
         goalsAdminGui = new GoalsAdminGui(this);
         newGameGui = new NewGameGui();
@@ -69,11 +70,10 @@ public class BingoMC extends JavaPlugin implements Listener {
         commandHandler = new BingoCommandHandler(
             this,
             roundService,
-            goalConfigService,
+            goalsService,
             goalsViewerGui,
             goalsAdminGui,
             newGameGui,
-            () -> reloadGoalsFromDisk(false),
             this::prefixed
         );
 
@@ -87,7 +87,7 @@ public class BingoMC extends JavaPlugin implements Listener {
         
         getLogger().info("BingoMC has been enabled!");
 
-        if (!reloadGoalsFromDisk(true)) {
+        if (!goalsService.reloadGoals(true)) {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -127,26 +127,6 @@ public class BingoMC extends JavaPlugin implements Listener {
 
     public long getRoundRemainingSeconds() {
         return roundService.getRoundRemainingSeconds();
-    }
-
-    private boolean reloadGoalsFromDisk(boolean startup) {
-        GoalLoadResult result = goalConfigService.loadGoals();
-        if (!result.isValid()) {
-            for (String error : result.errors()) {
-                getLogger().severe("Goal config error: " + error);
-            }
-            if (startup) {
-                getLogger().severe("Plugin startup aborted due to invalid goals.yml");
-            }
-            return false;
-        }
-
-        goalManager.clearRegisteredGoals();
-        for (var loaded : result.goals()) {
-            goalManager.registerGoal(loaded.goal(), loaded.points());
-        }
-        getLogger().info("Loaded " + result.goals().size() + " goals from goals.yml");
-        return true;
     }
 
     public boolean isGameRunning() {
