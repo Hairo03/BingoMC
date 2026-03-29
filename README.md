@@ -116,6 +116,17 @@ Supported `type` values:
 
 If `goals.yml` is invalid at startup, plugin startup is aborted.
 
+## TODO
+
+- Add freeze period with countdown after round start
+- Add a configurable ready check before round start, so servers can choose whether all players must confirm they are ready.
+- Add a permission-based admin join bypass, allowing admins to be excluded from joining the round automatically unless they explicitly opt in.
+   - If admins didn't join, add ability to spectate, maybe with GUI
+   - When a player completes a goal, admin should see link to tp to said player on click
+- Change rejoining text to fit longer games
+- Ability to change, add and delete goals in-game through admin GUI
+- Cross-platform (Geyser, VIA Versions)
+
 ## Dependencies
 
 | Dependency | Version | Purpose |
