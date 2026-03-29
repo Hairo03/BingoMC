@@ -20,6 +20,7 @@ Thumbs.db
 # Build artifacts
 *.class
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.nar
 *.ear
