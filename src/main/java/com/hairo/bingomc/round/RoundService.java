@@ -114,6 +114,8 @@ public class RoundService {
                 preparationTask = null;
             }
             preparationActive = false;
+            // Restore participant state if we were in preparation when plugin disabled
+            updateParticipantsPreparing(false);
         }
 
         if (timer != null && timer.isRunning()) {
@@ -206,6 +208,8 @@ public class RoundService {
             preparationActive = false;
         }
 
+        updateParticipantsPreparing(false);
+
         if (timer.isRunning()) {
             timer.stop();
         }
@@ -259,19 +263,7 @@ public class RoundService {
     private void beginPreparation(long roundDurationSeconds) {
         pendingRoundDurationSeconds = roundDurationSeconds;
         preparationActive = true;
-
-        // Make participants invulnerable and silent during preparation
-        for (UUID id : roundParticipants) {
-            Player p = Bukkit.getPlayer(id);
-            if (p != null && p.isOnline()) {
-                try {
-                    p.setInvulnerable(true);
-                    p.setSilent(true);
-                    p.setCanPickupItems(false);
-                } catch (Exception ignored) {
-                }
-            }
-        }
+        updateParticipantsPreparing(true);
 
         Bukkit.broadcast(prefixer.apply(
             Component.text("Bingo round is starting! Prepare yourself. Round begins in ", NamedTextColor.GOLD)
@@ -322,20 +314,7 @@ public class RoundService {
 
     private void launchRound() {
         preparationActive = false;
-        // stop altering world game rules; player state restored below
-
-        // Restore participant state
-        for (UUID id : roundParticipants) {
-            Player p = Bukkit.getPlayer(id);
-            if (p != null && p.isOnline()) {
-                try {
-                    p.setInvulnerable(false);
-                    p.setSilent(false);
-                    p.setCanPickupItems(true);
-                } catch (Exception ignored) {
-                }
-            }
-        }
+        updateParticipantsPreparing(false);
 
         Title goTitle = Title.title(
             Component.text("GO!", NamedTextColor.GREEN, TextDecoration.BOLD),
@@ -423,6 +402,20 @@ public class RoundService {
 
         worldService.moveActiveToPreviousRound();
         roundParticipants.clear();
+    }
+
+    private void updateParticipantsPreparing(boolean preparing) {
+        for (UUID id : roundParticipants) {
+            Player p = Bukkit.getPlayer(id);
+            if (p != null && p.isOnline()) {
+                try {
+                    p.setInvulnerable(preparing);
+                    p.setSilent(preparing);
+                    p.setCanPickupItems(!preparing);
+                } catch (Exception ignored) {
+                }
+            }
+        }
     }
 
     private void updateTimerDisplay() {
