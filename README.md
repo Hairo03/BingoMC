@@ -118,7 +118,6 @@ If `goals.yml` is invalid at startup, plugin startup is aborted.
 
 ## TODO
 
-- Add freeze period with countdown after round start
 - Add a configurable ready check before round start, so servers can choose whether all players must confirm they are ready.
 - Add a permission-based admin join bypass, allowing admins to be excluded from joining the round automatically unless they explicitly opt in.
    - If admins didn't join, add ability to spectate, maybe with GUI
