@@ -55,10 +55,6 @@ public class BingoCommandHandler {
             sender.sendMessage(prefixer.apply(Component.text("Only players can use /bingo start.", NamedTextColor.RED)));
             return true;
         }
-        if (!player.isOp()) {
-            sender.sendMessage(prefixer.apply(Component.text("Only operators can start a Bingo round.", NamedTextColor.RED)));
-            return true;
-        }
         if (roundService.isGameRunning()) {
             sender.sendMessage(prefixer.apply(Component.text("A Bingo round is already running.", NamedTextColor.YELLOW)));
             return true;
@@ -94,11 +90,6 @@ public class BingoCommandHandler {
     }
 
     public boolean handleStopCommand(CommandSender sender) {
-        if (sender instanceof Player player && !player.isOp()) {
-            sender.sendMessage(prefixer.apply(Component.text("Only operators can stop a Bingo round.", NamedTextColor.RED)));
-            return true;
-        }
-
         if (!roundService.isGameRunning()) {
             sender.sendMessage(prefixer.apply(Component.text("No Bingo round is currently running.", NamedTextColor.YELLOW)));
             return true;
@@ -149,11 +140,6 @@ public class BingoCommandHandler {
     }
 
     public boolean handleGoalsReloadCommand(CommandSender sender) {
-        if (sender instanceof Player player && !player.hasPermission("bingomc.goals.admin")) {
-            sender.sendMessage(prefixer.apply(Component.text("You do not have permission to reload goals.", NamedTextColor.RED)));
-            return true;
-        }
-
         if (roundService.isGameRunning()) {
             sender.sendMessage(prefixer.apply(Component.text("Cannot reload goals while a round is running.", NamedTextColor.YELLOW)));
             return true;
