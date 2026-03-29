@@ -17,16 +17,23 @@ public class BingoCommand {
 
     public void register(Commands commands) {
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("bingo")
-            .executes(this::executeRoot)
-            .then(Commands.literal("start").executes(this::executeStart))
-            .then(Commands.literal("stop").executes(this::executeStop))
-            .then(
-                Commands.literal("goals")
-                    .executes(this::executeGoalsView)
-                    .then(Commands.literal("admin").executes(this::executeGoalsAdmin))
-                    .then(Commands.literal("validate").executes(this::executeGoalsValidate))
-                    .then(Commands.literal("reload").executes(this::executeGoalsReload))
-            );
+                .executes(this::executeRoot)
+                .then(Commands.literal("start").requires(sender -> sender.getSender().hasPermission("bingomc.start"))
+                        .executes(this::executeStart))
+                .then(Commands.literal("stop").requires(sender -> sender.getSender().hasPermission("bingomc.stop"))
+                        .executes(this::executeStop))
+                .then(
+                        Commands.literal("goals")
+                                .executes(this::executeGoalsView)
+                                .then(Commands.literal("admin")
+                                        .requires(sender -> sender.getSender().hasPermission("bingomc.goals.admin"))
+                                        .executes(this::executeGoalsAdmin))
+                                .then(Commands.literal("validate")
+                                        .requires(sender -> sender.getSender().hasPermission("bingomc.goals.validate"))
+                                        .executes(this::executeGoalsValidate))
+                                .then(Commands.literal("reload")
+                                        .requires(sender -> sender.getSender().hasPermission("bingomc.goals.reload"))
+                                        .executes(this::executeGoalsReload)));
         commands.register(root.build(), "Main Bingo command", List.of());
     }
 

@@ -3,6 +3,9 @@ package com.hairo.bingomc.gui;
 import com.hairo.bingomc.BingoMC;
 import com.hairo.bingomc.goals.core.AmountBasedGoal;
 import com.hairo.bingomc.goals.core.PlayerGoal;
+
+import io.papermc.paper.datacomponent.DataComponentTypes;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -44,11 +47,12 @@ public final class GoalsViewerGui {
         for (PlayerGoal goal : goals) {
             boolean done = completed.contains(goal.id());
             Material icon = done ? Material.EMERALD_BLOCK : goal.icon();
-            int amount = done ? goal instanceof AmountBasedGoal ? ((AmountBasedGoal) goal).amount() : 1 : 1;
+            int amount = done ? 1 : goal instanceof AmountBasedGoal ? ((AmountBasedGoal) goal).amount() : 1 ;
             int points = plugin.getGoalManager().getGoalPoints(goal.id());
 
             goalItems.add(Item.simple(new ItemBuilder(icon)
                 .setName((done ? "<green>" : "<yellow>") + goal.descriptionText())
+                .hideTooltip(DataComponentTypes.ATTRIBUTE_MODIFIERS, DataComponentTypes.TOOL)
                 .addLoreLines(
                     "<dark_gray>Reward: <aqua><bold>" + points + " pts",
                     done ? "<green><bold>Completed" : "<red><bold>Incomplete"

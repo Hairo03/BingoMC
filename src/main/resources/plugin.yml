@@ -8,6 +8,21 @@ depend:
   - Multiverse-NetherPortals
   - Multiverse-Inventories
 permissions:
+  bingomc.goals.user:
+    description: Allows opening the goals UI and viewing goals
+    default: notop
   bingomc.goals.admin:
     description: Allows opening the goals admin UI and managing goals
+    default: op
+  bingomc.goals.reload:
+    description: Allows reloading goals
+    default: op
+  bingomc.goals.validate:
+    description: Allows validating goals
+    default: op
+  bingomc.start:
+    description: Allows starting a Bingo round
+    default: op
+  bingomc.stop:
+    description: Allows stopping a Bingo round
     default: op
