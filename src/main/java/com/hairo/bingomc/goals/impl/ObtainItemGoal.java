@@ -6,18 +6,21 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
+import com.hairo.bingomc.goals.core.AmountBasedGoal;
 import com.hairo.bingomc.goals.core.GoalTrigger;
 import com.hairo.bingomc.goals.core.PlayerGoal;
 
-public class ObtainItemGoal implements PlayerGoal {
+public class ObtainItemGoal implements PlayerGoal, AmountBasedGoal {
     private final String id;
     private final Material item;
     private final int amount;
+    private final Material icon;
 
-    public ObtainItemGoal(String id, Material item, int amount) {
+    public ObtainItemGoal(String id, Material item, int amount, Material icon) {
         this.id = id;
         this.item = item;
         this.amount = amount;
+        this.icon = icon;
     }
 
     @Override
@@ -26,6 +29,16 @@ public class ObtainItemGoal implements PlayerGoal {
     }
 
     @Override
+	public Material icon() {
+		return icon;
+	}
+
+    @Override
+	public int amount() {
+		return amount;
+	}
+
+	@Override
     public boolean isComplete(Player player) {
         return player.getInventory().contains(item, amount);
     }

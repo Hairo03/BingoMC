@@ -1,5 +1,6 @@
 package com.hairo.bingomc.goals.config;
 
+import com.hairo.bingomc.goals.impl.ChangeDimensionGoal;
 import com.hairo.bingomc.goals.impl.ConsumeItemGoal;
 import com.hairo.bingomc.goals.impl.ItemCraftGoal;
 import com.hairo.bingomc.goals.impl.KillEntityGoal;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World.Environment;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -33,12 +35,13 @@ public final class GoalConfigService {
     public GoalConfigService(JavaPlugin plugin, ConsumeTracker consumeTracker) {
         this.plugin = plugin;
         this.factories = Map.of(
-            "craft_item", (id, points, section) -> new LoadedGoal(new ItemCraftGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points),
-            "consume_item", (id, points, section) -> new LoadedGoal(new ConsumeItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), consumeTracker), points),
-            "use_vehicle", (id, points, section) -> new LoadedGoal(new UseVehicleGoal(id, parseEntityType(section, "entity_type")), points),
-            "obtain_item", (id, points, section) -> new LoadedGoal(new ObtainItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1)), points),
-            "kill_entity", (id, points, section) -> new LoadedGoal(new KillEntityGoal(id, parseEntityType(section, "entity_type"), parseAmount(section, "amount", 1)), points),
-            "unlock_advancement", (id, points, section) -> new LoadedGoal(new UnlockAdvancementGoal(id, parseAdvancementKey(section, "advancement_key")), points));
+                "craft_item", (id, points, section) -> new LoadedGoal(new ItemCraftGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), parseIconMaterial(section, "icon")), points),
+                "consume_item", (id, points, section) -> new LoadedGoal(new ConsumeItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), consumeTracker, parseIconMaterial(section, "icon")), points),
+                "use_vehicle", (id, points, section) -> new LoadedGoal(new UseVehicleGoal(id, parseEntityType(section, "entity_type"), parseIconMaterial(section, "icon")), points),
+                "obtain_item", (id, points, section) -> new LoadedGoal(new ObtainItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), parseIconMaterial(section, "icon")), points),
+                "kill_entity", (id, points, section) -> new LoadedGoal(new KillEntityGoal(id, parseEntityType(section, "entity_type"), parseAmount(section, "amount", 1), parseIconMaterial(section, "icon")), points),
+                "unlock_advancement", (id, points, section) -> new LoadedGoal(new UnlockAdvancementGoal(id, parseAdvancementKey(section, "advancement_key"), parseIconMaterial(section, "icon")), points),
+                "change_dimension", (id, points, section) -> new LoadedGoal(new ChangeDimensionGoal(id, parseEnvironment(section, "dimension"), parseIconMaterial(section, "icon")), points));
     }
 
     public GoalLoadResult loadGoals() {
@@ -92,15 +95,15 @@ public final class GoalConfigService {
         return new GoalLoadResult(loaded, errors);
     }
 
-    private LoadedGoal createGoal(String id, String type, int points, Map<?,?> section) {
-		GoalFactory factory = factories.get(type);
+    private LoadedGoal createGoal(String id, String type, int points, Map<?, ?> section) {
+        GoalFactory factory = factories.get(type);
         if (factory == null) {
             throw new IllegalArgumentException("Unknown goal type: " + type);
         }
         return factory.create(id, points, section);
-	}
+    }
 
-	private String readString(Map<?, ?> section, String key) {
+    private String readString(Map<?, ?> section, String key) {
         Object value = section.get(key);
         return value == null ? "" : String.valueOf(value);
     }
@@ -202,5 +205,29 @@ public final class GoalConfigService {
         }
 
         return parsed;
+    }
+
+    private Environment parseEnvironment(Map<?, ?> section, String string) {
+        String value = readString(section, string).trim().toUpperCase(Locale.ROOT);
+        if (value.isEmpty()) {
+            throw new IllegalArgumentException("Missing dimension");
+        }
+        try {
+            return Environment.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Unknown dimension: " + value);
+        }
+    }
+
+    private Material parseIconMaterial(Map<?, ?> section, String key) {
+        String value = readString(section, key).trim().toUpperCase(Locale.ROOT);
+        if (value.isEmpty()) {
+            return Material.ORANGE_WOOL; // default icon
+        }
+        Material material = Material.matchMaterial(value);
+        if (material == null) {
+            throw new IllegalArgumentException("Unknown icon material: " + value);
+        }
+        return material;
     }
 }

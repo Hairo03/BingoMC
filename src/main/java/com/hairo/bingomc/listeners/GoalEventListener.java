@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
@@ -108,5 +109,11 @@ public class GoalEventListener implements Listener {
     public void onAdvancementDone(PlayerAdvancementDoneEvent event) {
         Player player = event.getPlayer();
         evaluateIfRunning(player, GoalTrigger.ADVANCEMENT);
+    }
+
+    @EventHandler
+    public void onDimensionChange(PlayerChangedWorldEvent event) {
+        Player player = event.getPlayer();
+        evaluateIfRunning(player, GoalTrigger.CHANGE_DIMENSION);
     }
 }

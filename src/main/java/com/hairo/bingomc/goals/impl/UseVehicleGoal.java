@@ -3,6 +3,7 @@ package com.hairo.bingomc.goals.impl;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -13,20 +14,27 @@ import com.hairo.bingomc.goals.core.PlayerGoal;
 public class UseVehicleGoal implements PlayerGoal {
     private final String id;
     private final EntityType vehicleType;
+    private final Material icon;
 
-    public UseVehicleGoal(String id, Class<? extends Entity> vehicle) {
-        this(id, resolveEntityType(vehicle));
+    public UseVehicleGoal(String id, Class<? extends Entity> vehicle, Material icon) {
+        this(id, resolveEntityType(vehicle), icon);
     }
 
-    public UseVehicleGoal(String id, EntityType vehicleType) {
+    public UseVehicleGoal(String id, EntityType vehicleType, Material icon) {
         this.id = id;
         this.vehicleType = vehicleType;
+        this.icon = icon;
     }
 
     @Override
     public String id() {
         return id;
     }
+
+    @Override
+	public Material icon() {
+		return icon;
+	}
 
     @Override
     public Set<GoalTrigger> triggers() {

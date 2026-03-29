@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
@@ -33,16 +34,23 @@ public class UnlockAdvancementGoal implements PlayerGoal, RoundAwareGoal {
 
     private final String id;
     private final NamespacedKey advancementKey;
+    private final Material icon;
 
-    public UnlockAdvancementGoal(String id, NamespacedKey advancementKey) {
+    public UnlockAdvancementGoal(String id, NamespacedKey advancementKey, Material icon) {
         this.id = id;
         this.advancementKey = advancementKey;
+        this.icon = icon;
     }
 
     @Override
     public String id() {
         return id;
     }
+
+    @Override
+	public Material icon() {
+		return icon;
+	}
 
     @Override
     public Set<GoalTrigger> triggers() {

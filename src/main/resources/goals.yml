@@ -4,6 +4,7 @@ goals:
     difficulty: easy
     type: obtain_item
     material: OAK_LOG
+    icon: OAK_LOG
     amount: 16
     points: 25
     enabled: true
@@ -12,6 +13,7 @@ goals:
     difficulty: easy
     type: obtain_item
     material: COBBLESTONE
+    icon: COBBLESTONE
     amount: 32
     points: 25
     enabled: true
@@ -20,6 +22,7 @@ goals:
     difficulty: easy
     type: craft_item
     material: CRAFTING_TABLE
+    icon: CRAFTING_TABLE
     amount: 1
     points: 25
     enabled: true
@@ -28,6 +31,7 @@ goals:
     difficulty: easy
     type: craft_item
     material: BREAD
+    icon: BREAD
     amount: 1
     points: 25
     enabled: true
@@ -36,6 +40,7 @@ goals:
     difficulty: easy
     type: consume_item
     material: APPLE
+    icon: APPLE
     amount: 1
     points: 25
     enabled: true
@@ -44,6 +49,7 @@ goals:
     difficulty: easy
     type: kill_entity
     entity_type: COW
+    icon: LEATHER
     amount: 2
     points: 25
     enabled: true
@@ -52,6 +58,7 @@ goals:
     difficulty: easy
     type: unlock_advancement
     advancement_key: adventure/sleep_in_bed
+    icon: WHITE_BED
     points: 25
     enabled: true
 
@@ -61,6 +68,7 @@ goals:
     difficulty: medium
     type: obtain_item
     material: IRON_INGOT
+    icon: IRON_INGOT
     amount: 24
     points: 50
     enabled: true
@@ -69,6 +77,7 @@ goals:
     difficulty: medium
     type: obtain_item
     material: LAPIS_LAZULI
+    icon: LAPIS_LAZULI
     amount: 16
     points: 50
     enabled: true
@@ -77,6 +86,7 @@ goals:
     difficulty: medium
     type: craft_item
     material: IRON_PICKAXE
+    icon: IRON_PICKAXE
     amount: 1
     points: 50
     enabled: true
@@ -85,6 +95,7 @@ goals:
     difficulty: medium
     type: craft_item
     material: SHIELD
+    icon: SHIELD
     amount: 1
     points: 50
     enabled: true
@@ -93,6 +104,7 @@ goals:
     difficulty: medium
     type: consume_item
     material: COOKED_BEEF
+    icon: COOKED_BEEF
     amount: 3
     points: 50
     enabled: true
@@ -101,6 +113,7 @@ goals:
     difficulty: medium
     type: kill_entity
     entity_type: SKELETON
+    icon: BONE
     amount: 5
     points: 50
     enabled: true
@@ -109,6 +122,7 @@ goals:
     difficulty: medium
     type: use_vehicle
     entity_type: HORSE
+    icon: SADDLE
     points: 50
     enabled: true
 
@@ -118,6 +132,7 @@ goals:
     difficulty: hard
     type: craft_item
     material: DIAMOND_PICKAXE
+    icon: DIAMOND_PICKAXE
     amount: 1
     points: 100
     enabled: true
@@ -126,6 +141,7 @@ goals:
     difficulty: hard
     type: obtain_item
     material: ENDER_PEARL
+    icon: ENDER_PEARL
     amount: 8
     points: 100
     enabled: true
@@ -134,6 +150,7 @@ goals:
     difficulty: hard
     type: obtain_item
     material: BLAZE_ROD
+    icon: BLAZE_ROD
     amount: 8
     points: 100
     enabled: true
@@ -142,6 +159,7 @@ goals:
     difficulty: hard
     type: craft_item
     material: ENCHANTING_TABLE
+    icon: ENCHANTING_TABLE
     amount: 1
     points: 100
     enabled: true
@@ -150,15 +168,16 @@ goals:
     difficulty: hard
     type: consume_item
     material: GOLDEN_APPLE
+    icon: GOLDEN_APPLE
     amount: 1
     points: 100
     enabled: true
 
-  - id: hard_kill_evoker_1
+  - id: hard_enter_nether
     difficulty: hard
-    type: kill_entity
-    entity_type: EVOKER
-    amount: 1
+    type: change_dimension
+    dimension: NETHER
+    icon: OBSIDIAN
     points: 100
     enabled: true
 
@@ -166,6 +185,7 @@ goals:
     difficulty: hard
     type: unlock_advancement
     advancement_key: minecraft:nether/return_to_sender
+    icon: FIRE_CHARGE
     points: 100
     enabled: true
 
@@ -175,6 +195,7 @@ goals:
     difficulty: impossible
     type: obtain_item
     material: NETHERITE_INGOT
+    icon: NETHERITE_INGOT
     amount: 1
     points: 200
     enabled: true
@@ -183,6 +204,7 @@ goals:
     difficulty: impossible
     type: kill_entity
     entity_type: WARDEN
+    icon: SCULK
     amount: 1
     points: 200
     enabled: true
@@ -191,6 +213,7 @@ goals:
     difficulty: impossible
     type: obtain_item
     material: TOTEM_OF_UNDYING
+    icon: TOTEM_OF_UNDYING
     amount: 1
     points: 200
     enabled: true
@@ -199,6 +222,7 @@ goals:
     difficulty: impossible
     type: craft_item
     material: RECOVERY_COMPASS
+    icon: RECOVERY_COMPASS
     amount: 1
     points: 200
     enabled: true
@@ -207,6 +231,7 @@ goals:
     difficulty: impossible
     type: consume_item
     material: ENCHANTED_GOLDEN_APPLE
+    icon: ENCHANTED_GOLDEN_APPLE
     amount: 1
     points: 200
     enabled: true
@@ -215,6 +240,7 @@ goals:
     difficulty: impossible
     type: kill_entity
     entity_type: WITHER
+    icon: NETHER_STAR
     amount: 1
     points: 200
     enabled: true
@@ -223,6 +249,7 @@ goals:
     difficulty: impossible
     type: kill_entity
     entity_type: ENDER_DRAGON
+    icon: DRAGON_BREATH
     amount: 1
     points: 200
     enabled: true

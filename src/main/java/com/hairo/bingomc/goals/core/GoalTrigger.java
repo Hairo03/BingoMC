@@ -12,4 +12,5 @@ public enum GoalTrigger {
     BREED,
     TAME,
     KILL_ENTITY,
+    CHANGE_DIMENSION
 }

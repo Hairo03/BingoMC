@@ -7,26 +7,39 @@ import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
+import com.hairo.bingomc.goals.core.AmountBasedGoal;
 import com.hairo.bingomc.goals.core.GoalTrigger;
 import com.hairo.bingomc.goals.core.PlayerGoal;
 import com.hairo.bingomc.goals.util.ConsumeTracker;
 
-public class ConsumeItemGoal implements PlayerGoal {
+public class ConsumeItemGoal implements PlayerGoal, AmountBasedGoal {
     private final String id;
     private final Material item;
     private final int amount;
     private final ConsumeTracker consumeTracker;
+    private final Material icon;
 
-    public ConsumeItemGoal(String id, Material item, int amount, ConsumeTracker consumeTracker) {
+    public ConsumeItemGoal(String id, Material item, int amount, ConsumeTracker consumeTracker, Material icon) {
         this.id = id;
         this.item = item;
         this.amount = amount;
         this.consumeTracker = consumeTracker;
+        this.icon = icon;
     }
 
     @Override
     public String id() {
         return id;
+    }
+
+    @Override
+	public Material icon() {
+		return icon;
+	}
+
+    @Override
+    public int amount() {
+        return amount;
     }
 
     @Override
