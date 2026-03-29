@@ -204,62 +204,6 @@ public class RoundService {
                 preparationTask = null;
             }
             preparationActive = false;
-
-            // Teleport participants back to the main world before cleaning up worlds.
-            World mainWorld = Bukkit.getWorld(mainWorldName);
-            if (mainWorld == null) {
-                plugin.getLogger().warning("Main world missing while aborting preparation; players may remain in personal worlds.");
-                worldService.moveActiveToPreviousRound();
-                roundParticipants.clear();
-                Bukkit.broadcast(prefixer.apply(
-                    Component.text("Bingo round preparation cancelled by " + actorName + ".", NamedTextColor.YELLOW)
-                ));
-                return true;
-            }
-
-            List<CompletableFuture<?>> teleportFutures = new ArrayList<>();
-            for (UUID playerId : roundParticipants) {
-                Player player = Bukkit.getPlayer(playerId);
-                if (player != null && player.isOnline()) {
-                    if (timerBossBar != null) {
-                        player.hideBossBar(timerBossBar);
-                    }
-                    try {
-                        CompletableFuture<?> f = player.teleportAsync(mainWorld.getSpawnLocation());
-                        if (f != null) {
-                            teleportFutures.add(f);
-                        }
-                    } catch (Exception e) {
-                        plugin.getLogger().warning("Failed to teleport player " + player.getName() + " during abort: " + e.getMessage());
-                    }
-                }
-            }
-
-            if (teleportFutures.isEmpty()) {
-                worldService.moveActiveToPreviousRound();
-                roundParticipants.clear();
-                Bukkit.broadcast(prefixer.apply(
-                    Component.text("Bingo round preparation cancelled by " + actorName + ".", NamedTextColor.YELLOW)
-                ));
-                return true;
-            }
-
-            CompletableFuture.allOf(teleportFutures.toArray(new CompletableFuture[0]))
-                .orTimeout(5, TimeUnit.SECONDS)
-                .whenComplete((v, ex) -> {
-                    if (ex != null) {
-                        plugin.getLogger().warning("One or more teleports failed or timed out while aborting preparation: " + ex.getMessage());
-                    }
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        worldService.moveActiveToPreviousRound();
-                        roundParticipants.clear();
-                        Bukkit.broadcast(prefixer.apply(
-                            Component.text("Bingo round preparation cancelled by " + actorName + ".", NamedTextColor.YELLOW)
-                        ));
-                    });
-                });
-
-            return true;
         }
 
         if (timer.isRunning()) {
@@ -367,8 +311,10 @@ public class RoundService {
 
                 remaining[0]--;
             } else {
-                preparationTask.cancel();
-                preparationTask = null;
+                if (preparationTask != null) {
+                    preparationTask.cancel();
+                    preparationTask = null;
+                }
                 launchRound();
             }
         }, 20L, 20L);
@@ -435,7 +381,7 @@ public class RoundService {
             for (UUID playerId : roundParticipants) {
                 Player player = Bukkit.getPlayer(playerId);
                 if (player != null && player.isOnline()) {
-                    player.teleportAsync(mainWorld.getSpawnLocation());
+                    player.teleport(mainWorld.getSpawnLocation());
                 }
             }
         }
