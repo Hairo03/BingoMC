@@ -14,6 +14,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 public class GoalManager {
@@ -86,6 +87,7 @@ public class GoalManager {
                         .append(Component.text(")", NamedTextColor.DARK_GRAY, TextDecoration.BOLD))
                         .build()
                 );
+                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
             }
         }
     }
