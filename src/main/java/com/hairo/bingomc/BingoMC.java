@@ -3,7 +3,6 @@ package com.hairo.bingomc;
 import com.hairo.bingomc.goals.core.GoalManager;
 import com.hairo.bingomc.goals.config.GoalConfigService;
 import com.hairo.bingomc.goals.config.GoalsService;
-import com.hairo.bingomc.goals.util.ConsumeTracker;
 import com.hairo.bingomc.commands.BingoCommandHandler;
 import com.hairo.bingomc.gui.GoalsAdminGui;
 import com.hairo.bingomc.gui.GoalsViewerGui;
@@ -33,7 +32,6 @@ public class BingoMC extends JavaPlugin implements Listener {
     private static final long DEFAULT_GAME_DURATION_SECONDS = 5L * 60L;
 
     private final GoalManager goalManager = new GoalManager();
-    private ConsumeTracker consumeTracker;
     private GoalsViewerGui goalsViewerGui;
     private GoalsAdminGui goalsAdminGui;
     private NewGameGui newGameGui;
@@ -44,8 +42,7 @@ public class BingoMC extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        consumeTracker = new ConsumeTracker(this);
-        GoalConfigService goalConfigService = new GoalConfigService(this, consumeTracker);
+        GoalConfigService goalConfigService = new GoalConfigService(this);
         goalsService = new GoalsService(this, goalConfigService, goalManager);
         goalsViewerGui = new GoalsViewerGui(this);
         goalsAdminGui = new GoalsAdminGui(this);
@@ -64,7 +61,6 @@ public class BingoMC extends JavaPlugin implements Listener {
         roundService = new RoundService(
             this,
             goalManager,
-            consumeTracker,
             worldService,
             mainWorldName,
             DEFAULT_GAME_DURATION_SECONDS,
@@ -84,7 +80,7 @@ public class BingoMC extends JavaPlugin implements Listener {
         );
 
         getServer().getPluginManager().registerEvents(this, this);
-        getServer().getPluginManager().registerEvents(new GoalEventListener(this, goalManager, consumeTracker), this);
+        getServer().getPluginManager().registerEvents(new GoalEventListener(this, goalManager), this);
         getServer().getPluginManager().registerEvents(new PreparationEventListener(this), this);
 
         BingoCommand bingoCommand = new BingoCommand(commandHandler);
@@ -141,7 +137,7 @@ public class BingoMC extends JavaPlugin implements Listener {
     }
 
     public boolean isPreparationActive() {
-        return roundService.isPreparationActive();
+        return roundService.isGamePreparing();
     }
 
     public boolean isParticipant(UUID playerId) {

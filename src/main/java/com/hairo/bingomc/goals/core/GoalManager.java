@@ -21,7 +21,6 @@ public class GoalManager {
     private final List<PlayerGoal> goals = new ArrayList<>();
     private final Map<String, Integer> pointsByGoalId = new HashMap<>();
     private final Map<UUID, Set<String>> completedByPlayer = new HashMap<>();
-    private final Map<UUID, Set<Material>> consumedItems = new HashMap<>();
 
     public void registerGoal(PlayerGoal goal) {
         registerGoal(goal, 1);
@@ -49,16 +48,12 @@ public class GoalManager {
         return pointsByGoalId.getOrDefault(goalId, 1);
     }
 
-    public void registerConsumedItem(Player player, Material item) {
-        consumedItems.computeIfAbsent(player.getUniqueId(), k -> new HashSet<>()).add(item);
-    }
-
-    public Set<Material> getConsumedItems(Player player) {
-        return consumedItems.getOrDefault(player.getUniqueId(), Set.of());
-    }
-
-    public void clearConsumedItems(Player player) {
-        consumedItems.remove(player.getUniqueId());
+    public void onItemConsumed(Player player, Material material) {
+        for (PlayerGoal goal : goals) {
+            if (goal instanceof ConsumeAwareGoal consumeAwareGoal) {
+                consumeAwareGoal.onItemConsumed(player, material);
+            }
+        }
     }
 
     public void evaluate(Player player, GoalTrigger trigger) {
@@ -105,16 +100,24 @@ public class GoalManager {
     }
 
     public void onRoundStart(Player player) {
-        for (PlayerGoal goal : goals) {
-            if (goal instanceof RoundAwareGoal roundAwareGoal) {
-                roundAwareGoal.onRoundStart(player);
+        List<RoundAwareGoal> applied = new ArrayList<>();
+        try {
+            for (PlayerGoal goal : goals) {
+                if (goal instanceof RoundAwareGoal roundAwareGoal) {
+                    roundAwareGoal.onRoundStart(player);
+                    applied.add(roundAwareGoal);
+                }
             }
+        } catch (Exception e) {
+            Bukkit.getLogger().severe("Failed to initialize goals for player " + (player != null ? player.getName() : "unknown") + ": " + e.getMessage());
+            // Attempt to rollback/cleanup any partial state
+            resetAllProgress();
+            throw e;
         }
     }
 
     public void resetAllProgress() {
         completedByPlayer.clear();
-        consumedItems.clear();
         for (PlayerGoal goal : goals) {
             if (goal instanceof RoundAwareGoal roundAwareGoal) {
                 roundAwareGoal.onRoundReset();

@@ -7,7 +7,6 @@ import com.hairo.bingomc.goals.impl.KillEntityGoal;
 import com.hairo.bingomc.goals.impl.ObtainItemGoal;
 import com.hairo.bingomc.goals.impl.UnlockAdvancementGoal;
 import com.hairo.bingomc.goals.impl.UseVehicleGoal;
-import com.hairo.bingomc.goals.util.ConsumeTracker;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,11 +31,11 @@ public final class GoalConfigService {
 
     private final Map<String, GoalFactory> factories;
 
-    public GoalConfigService(JavaPlugin plugin, ConsumeTracker consumeTracker) {
+    public GoalConfigService(JavaPlugin plugin) {
         this.plugin = plugin;
         this.factories = Map.of(
                 "craft_item", (id, points, section) -> new LoadedGoal(new ItemCraftGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), parseIconMaterial(section, "icon")), points),
-                "consume_item", (id, points, section) -> new LoadedGoal(new ConsumeItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), consumeTracker, parseIconMaterial(section, "icon")), points),
+                "consume_item", (id, points, section) -> new LoadedGoal(new ConsumeItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), parseIconMaterial(section, "icon")), points),
                 "use_vehicle", (id, points, section) -> new LoadedGoal(new UseVehicleGoal(id, parseEntityType(section, "entity_type"), parseIconMaterial(section, "icon")), points),
                 "obtain_item", (id, points, section) -> new LoadedGoal(new ObtainItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), parseIconMaterial(section, "icon")), points),
                 "kill_entity", (id, points, section) -> new LoadedGoal(new KillEntityGoal(id, parseEntityType(section, "entity_type"), parseAmount(section, "amount", 1), parseIconMaterial(section, "icon")), points),
