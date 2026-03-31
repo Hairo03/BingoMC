@@ -19,17 +19,14 @@ import org.bukkit.event.vehicle.VehicleEnterEvent;
 import com.hairo.bingomc.BingoMC;
 import com.hairo.bingomc.goals.core.GoalManager;
 import com.hairo.bingomc.goals.core.GoalTrigger;
-import com.hairo.bingomc.goals.util.ConsumeTracker;
 
 public class GoalEventListener implements Listener {
     private final BingoMC plugin;
     private final GoalManager goalManager;
-    private final ConsumeTracker consumeTracker;
 
-    public GoalEventListener(BingoMC plugin, GoalManager goalManager, ConsumeTracker consumeTracker) {
+    public GoalEventListener(BingoMC plugin, GoalManager goalManager) {
         this.plugin = plugin;
         this.goalManager = goalManager;
-        this.consumeTracker = consumeTracker;
     }
 
     private void evaluateIfRunning(Player player, GoalTrigger trigger) {
@@ -86,7 +83,7 @@ public class GoalEventListener implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        consumeTracker.recordConsumedItem(player, event.getItem().getType());
+        goalManager.onItemConsumed(player, event.getItem().getType());
         evaluateIfRunning(player, GoalTrigger.CONSUME);
     }
 

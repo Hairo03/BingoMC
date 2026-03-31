@@ -2,32 +2,19 @@ package com.hairo.bingomc.round;
 
 import com.hairo.bingomc.events.TimerExpiredEvent;
 import com.hairo.bingomc.goals.core.GoalManager;
-import com.hairo.bingomc.goals.core.GoalTrigger;
-import com.hairo.bingomc.goals.util.ConsumeTracker;
 import com.hairo.bingomc.goals.util.Timer;
 import com.hairo.bingomc.worlds.BingoWorldService;
 import com.hairo.bingomc.worlds.PlayerWorldSet;
-import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import org.bukkit.scheduler.BukkitTask;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -35,27 +22,23 @@ public class RoundService {
 
     private final JavaPlugin plugin;
     private final GoalManager goalManager;
-    private final ConsumeTracker consumeTracker;
     private final BingoWorldService worldService;
     private final String mainWorldName;
     private final long defaultGameDurationSeconds;
     private final long preparationCountdownSeconds;
-    private final Function<Component, Component> prefixer;
 
-    private final Set<UUID> roundParticipants = new HashSet<>();
+    private final RoundParticipants participants;
+    private final RoundDisplay display;
+    private final RoundTaskTicker taskTicker;
 
     private Timer timer;
-    private boolean gameRunning;
-    private boolean timerExpiredHandled;
-    private BossBar timerBossBar;
-
-    private boolean preparationActive = false;
+    private boolean gameRunning = false;
+    private boolean gamePreparing = false;
     private long pendingRoundDurationSeconds;
-    private BukkitTask preparationTask;
+
     public RoundService(
         JavaPlugin plugin,
         GoalManager goalManager,
-        ConsumeTracker consumeTracker,
         BingoWorldService worldService,
         String mainWorldName,
         long gameDurationSeconds,
@@ -64,12 +47,14 @@ public class RoundService {
     ) {
         this.plugin = plugin;
         this.goalManager = goalManager;
-        this.consumeTracker = consumeTracker;
         this.worldService = worldService;
         this.mainWorldName = mainWorldName;
         this.defaultGameDurationSeconds = gameDurationSeconds;
         this.preparationCountdownSeconds = preparationCountdownSeconds;
-        this.prefixer = prefixer;
+
+        this.participants = new RoundParticipants();
+        this.display = new RoundDisplay(prefixer, participants);
+        this.taskTicker = new RoundTaskTicker(plugin, goalManager, display, participants);
     }
 
     public void initialize() {
@@ -77,66 +62,59 @@ public class RoundService {
         timer.setLimitSeconds(defaultGameDurationSeconds);
         timer.reset();
         gameRunning = false;
-        timerExpiredHandled = false;
-        timerBossBar = BossBar.bossBar(
-            bossBarTime("00:00"),
-            0.0f,
-            BossBar.Color.BLUE,
-            BossBar.Overlay.PROGRESS
-        );
     }
 
     public void startTicker() {
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            if (!gameRunning) {
-                return;
-            }
-
-            if (timer.isRunning() && timer.isExpired() && !timerExpiredHandled) {
-                timer.stop();
-                timerExpiredHandled = true;
-                Bukkit.getPluginManager().callEvent(new TimerExpiredEvent(timer.getElapsedMillis()));
-                return;
-            }
-
-            updateTimerDisplay();
-
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                goalManager.evaluate(player, GoalTrigger.PERIODIC);
-            }
-        }, 20L, 20L);
+        if (timer != null && timer.isRunning()) {
+            taskTicker.startGameTicker(timer);
+        }
     }
 
     public void onDisable() {
-        if (preparationActive) {
-            if (preparationTask != null) {
-                preparationTask.cancel();
-                preparationTask = null;
-            }
-            preparationActive = false;
-            // Restore participant state if we were in preparation when plugin disabled
-            updateParticipantsPreparing(false);
-        }
+        // Stop any running tickers and timers
+        taskTicker.stopPreparationTicker();
+        taskTicker.stopGameTicker();
 
         if (timer != null && timer.isRunning()) {
             timer.stop();
         }
 
-        worldService.cleanupManagedBingoWorldsOnShutdown(mainWorldName);
-
-        if (timerBossBar != null) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                player.hideBossBar(timerBossBar);
-            }
+        // Ensure preparation flags are cleared for participants
+        if (gamePreparing) {
+            gamePreparing = false;
+            participants.applyPreparationState(false);
         }
+
+        // If a game was running, attempt graceful cleanup: teleport participants back and log
+        if (gameRunning) {
+            World mainWorld = Bukkit.getWorld(mainWorldName);
+            if (mainWorld != null) {
+                for (UUID playerId : participants.getParticipants()) {
+                    Player p = Bukkit.getPlayer(playerId);
+                    if (p != null && p.isOnline()) {
+                        try {
+                            p.teleport(mainWorld.getSpawnLocation());
+                        } catch (Exception e) {
+                            plugin.getLogger().warning("Failed to teleport player during shutdown: " + e.getMessage());
+                        }
+                    }
+                }
+            }
+            display.broadcastMessage("Bingo round ended due to server shutdown.", NamedTextColor.YELLOW);
+            gameRunning = false;
+        }
+
+        // Cleanup worlds and UI
+        worldService.cleanupManagedBingoWorldsOnShutdown(mainWorldName);
+        display.hideBossBar();
+
+        // Clear participant list and related state
+        participants.clear();
     }
 
     public void onPlayerJoin(Player player) {
-        if (timerBossBar != null && gameRunning) {
-            player.sendMessage(prefixer.apply(Component.text(
-                "A round is currently running. You can join in the next round.",
-                NamedTextColor.YELLOW
-            )));
+        if (gameRunning) {
+            player.sendMessage(display.getPrefixedString("A round is currently running. You can join in the next round.", NamedTextColor.YELLOW));
         }
     }
 
@@ -151,12 +129,12 @@ public class RoundService {
     public boolean startRound(long worldSeed) {
         return startRound(worldSeed, defaultGameDurationSeconds);
     }
-
+    
     public boolean startRound(long worldSeed, long selectedDurationSeconds) {
-        if (gameRunning || preparationActive) {
+        if (gameRunning || gamePreparing) {
             return false;
         }
-
+        
         long roundDurationSeconds = selectedDurationSeconds > 0 ? selectedDurationSeconds : defaultGameDurationSeconds;
 
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
@@ -169,51 +147,90 @@ public class RoundService {
             return false;
         }
 
-        goalManager.resetAllProgress();
-        roundParticipants.clear();
-
-        for (Player player : onlinePlayers) {
-            roundParticipants.add(player.getUniqueId());
-            consumeTracker.clearConsumedItems(player);
-            goalManager.onRoundStart(player);
-
-            PlayerWorldSet worldSet = createdWorldSets.get(player.getUniqueId());
-            World playerWorld = worldSet == null ? null : Bukkit.getWorld(worldSet.overworldName());
-            if (playerWorld == null) {
+        // Verify worlds exist for all participants before mutating state
+        for (UUID participantId : participants.getParticipants()) {
+            Player player = Bukkit.getPlayer(participantId);
+            if (player == null) continue;
+            
+            PlayerWorldSet worldSet = createdWorldSets.get(participantId);
+            if (worldSet == null) {
                 plugin.getLogger().severe("Player world missing after creation for " + player.getName());
                 worldService.cleanupWorldSets(createdWorldSets.values());
                 worldService.clearTrackedRoundWorlds();
-                roundParticipants.clear();
                 return false;
             }
-            player.teleportAsync(playerWorld.getSpawnLocation());
+            World playerWorld = Bukkit.getWorld(worldSet.overworldName());
+            if (playerWorld == null) {
+                plugin.getLogger().severe("Player world not loaded for " + player.getName());
+                worldService.cleanupWorldSets(createdWorldSets.values());
+                worldService.clearTrackedRoundWorlds();
+                return false;
+            }
         }
 
+        // Activate and teleport players synchronously to ensure they're in their round worlds
         worldService.activateRoundWorldSets(createdWorldSets);
+        
+        // Initialize goal state before teleportation
+        goalManager.resetAllProgress();
+        try {
+            for (UUID participantId : participants.getParticipants()) {
+                Player player = Bukkit.getPlayer(participantId);
+                if (player == null) continue;
+                goalManager.onRoundStart(player);
+            }
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to initialize goals during round start: " + e.getMessage());
+            worldService.cleanupWorldSets(createdWorldSets.values());
+            worldService.clearTrackedRoundWorlds();
+            participants.clear();
+            goalManager.resetAllProgress();
+            return false;
+        }
+
+        // Now teleport players
+        for (UUID participantId : participants.getParticipants()) {
+            Player player = Bukkit.getPlayer(participantId);
+            if (player == null) continue;
+
+            PlayerWorldSet worldSet = createdWorldSets.get(participantId);
+            World playerWorld = Bukkit.getWorld(worldSet.overworldName());
+            try {
+                player.teleport(playerWorld.getSpawnLocation());
+            } catch (Exception e) {
+                plugin.getLogger().severe("Failed to teleport player " + player.getName() + ": " + e.getMessage());
+                worldService.cleanupWorldSets(createdWorldSets.values());
+                worldService.clearTrackedRoundWorlds();
+                participants.clear();
+                goalManager.resetAllProgress();
+                return false;
+            }
+        }
+
+        // Show title and broadcast after teleportation, before scheduling tasks
+        display.broadcastPreparationStart(preparationCountdownSeconds);
 
         beginPreparation(roundDurationSeconds);
         return true;
     }
 
     public boolean stopRound(String actorName) {
-        if (!gameRunning && !preparationActive) {
+        if (!gameRunning && !gamePreparing) {
             return false;
         }
 
-        if (preparationActive) {
-            if (preparationTask != null) {
-                preparationTask.cancel();
-                preparationTask = null;
-            }
-            preparationActive = false;
+        if (gamePreparing) {
+            taskTicker.stopPreparationTicker();
+            gamePreparing = false;
         }
 
-        updateParticipantsPreparing(false);
+        participants.applyPreparationState(false);
 
-        if (timer.isRunning()) {
+        if (timer != null && timer.isRunning()) {
             timer.stop();
         }
-        timerExpiredHandled = true;
+
+        taskTicker.stopGameTicker();
 
         concludeRound(
             "Bingo round stopped early by " + actorName + ".",
@@ -222,134 +239,64 @@ public class RoundService {
         return true;
     }
 
-    public void showStartingTitle() {
-        Title startingTitle = Title.title(
-            Component.text("Bingo game starting...", NamedTextColor.GOLD),
-            Component.empty(),
-            Title.Times.times(Duration.ofMillis(150), Duration.ofSeconds(5), Duration.ofMillis(200))
-        );
-
-        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            onlinePlayer.showTitle(startingTitle);
+    public void primeStartingParticipants() {
+        participants.clear();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            participants.add(player.getUniqueId());
         }
     }
 
+    public void showStartingTitle() {
+        display.showStartingTitle();
+    }
+
     public void clearStartingTitle() {
-        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            onlinePlayer.resetTitle();
-        }
+        display.clearStartingTitle();
     }
 
     public boolean isGameRunning() {
         return gameRunning;
     }
 
-    public boolean isPreparationActive() {
-        return preparationActive;
+    public boolean isGamePreparing() {
+        return gamePreparing;
     }
 
-    public boolean isParticipant(java.util.UUID playerId) {
-        return roundParticipants.contains(playerId);
+    public boolean isParticipant(UUID playerId) {
+        return participants.isParticipant(playerId);
     }
 
     public boolean isParticipant(Player player) {
-        return player != null && isParticipant(player.getUniqueId());
+        return participants.isParticipant(player);
     }
 
     public long getRoundRemainingSeconds() {
-        return timer.getRemainingSeconds();
+        return timer != null ? timer.getRemainingSeconds() : 0L;
     }
 
     private void beginPreparation(long roundDurationSeconds) {
         pendingRoundDurationSeconds = roundDurationSeconds;
-        preparationActive = true;
-        updateParticipantsPreparing(true);
+        gamePreparing = true;
+        participants.applyPreparationState(true);
 
-        Bukkit.broadcast(prefixer.apply(
-            Component.text("Bingo round is starting! Prepare yourself. Round begins in ", NamedTextColor.GOLD)
-                .append(Component.text(formatClock(preparationCountdownSeconds), NamedTextColor.AQUA, TextDecoration.BOLD))
-                .append(Component.text("...", NamedTextColor.GOLD))
-        ));
-
-        final long[] remaining = {preparationCountdownSeconds};
-
-        preparationTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            if (remaining[0] > 0) {
-                String timeDisplay = formatClock(remaining[0]);
-                Component actionBar = Component.text("Round starts in: ", NamedTextColor.YELLOW)
-                    .append(Component.text(timeDisplay, NamedTextColor.WHITE, TextDecoration.BOLD));
-
-                for (UUID id : roundParticipants) {
-                    Player p = Bukkit.getPlayer(id);
-                    if (p != null && p.isOnline()) {
-                        p.sendActionBar(actionBar);
-                    }
-                }
-
-                if (remaining[0] <= 10) {
-                    NamedTextColor countColor = remaining[0] <= 5 ? NamedTextColor.YELLOW : NamedTextColor.GREEN;
-                    Title countTitle = Title.title(
-                        Component.text(remaining[0], countColor, TextDecoration.BOLD),
-                        Component.empty(),
-                        Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(1100), Duration.ofMillis(0))
-                    );
-                    for (UUID id : roundParticipants) {
-                        Player p = Bukkit.getPlayer(id);
-                        if (p != null && p.isOnline()) {
-                            p.showTitle(countTitle);
-                        }
-                    }
-                }
-
-                remaining[0]--;
-            } else {
-                if (preparationTask != null) {
-                    preparationTask.cancel();
-                    preparationTask = null;
-                }
-                launchRound();
-            }
-        }, 20L, 20L);
+        taskTicker.startPreparationTicker(preparationCountdownSeconds, this::launchRound);
     }
 
     private void launchRound() {
-        preparationActive = false;
-        updateParticipantsPreparing(false);
+        gamePreparing = false;
+        participants.applyPreparationState(false);
 
-        Title goTitle = Title.title(
-            Component.text("GO!", NamedTextColor.GREEN, TextDecoration.BOLD),
-            Component.empty(),
-            Title.Times.times(Duration.ofMillis(0), Duration.ofSeconds(1), Duration.ofMillis(500))
-        );
-        for (UUID id : roundParticipants) {
-            Player p = Bukkit.getPlayer(id);
-            if (p != null && p.isOnline()) {
-                p.showTitle(goTitle);
-            }
-        }
+        display.showGoTitle();
 
         timer.reset();
         timer.setLimitSeconds(pendingRoundDurationSeconds);
         timer.start();
-        timerExpiredHandled = false;
+
+        // Start the in-game ticker now that the timer is running
+        taskTicker.startGameTicker(timer);
         gameRunning = true;
 
-        if (timerBossBar != null) {
-            timerBossBar.progress(1.0f);
-            timerBossBar.name(bossBarTime(formatClock(pendingRoundDurationSeconds)));
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                player.showBossBar(timerBossBar);
-            }
-        }
-
-        Bukkit.broadcast(prefixer.apply(
-            Component.text("Bingo round has started. You have ", NamedTextColor.GREEN)
-                .append(Component.text(formatClock(pendingRoundDurationSeconds), NamedTextColor.AQUA, TextDecoration.BOLD))
-                .append(Component.text(" minutes.", NamedTextColor.GREEN))
-                .append(Component.text(" Use ", NamedTextColor.YELLOW))
-                .append(Component.text("/bingo goals", NamedTextColor.WHITE, TextDecoration.BOLD))
-                .append(Component.text(" to view your objectives.", NamedTextColor.YELLOW))
-        ));
+        display.broadcastRoundStart(pendingRoundDurationSeconds);
     }
 
     private void concludeRound(String broadcastMessage, String logMessage) {
@@ -357,7 +304,7 @@ public class RoundService {
 
         World mainWorld = Bukkit.getWorld(mainWorldName);
         if (mainWorld != null) {
-            for (UUID playerId : roundParticipants) {
+            for (UUID playerId : participants.getParticipants()) {
                 Player player = Bukkit.getPlayer(playerId);
                 if (player != null && player.isOnline()) {
                     player.teleport(mainWorld.getSpawnLocation());
@@ -365,87 +312,24 @@ public class RoundService {
             }
         }
 
-        Bukkit.broadcast(prefixer.apply(Component.text(broadcastMessage, NamedTextColor.YELLOW)));
+        display.broadcastMessage(broadcastMessage, NamedTextColor.YELLOW);
         plugin.getLogger().info(logMessage);
 
-        List<UUID> ranking = new ArrayList<>(roundParticipants);
-        ranking.sort(Comparator.comparingInt((UUID playerId) -> goalManager.getPoints(playerId)).reversed());
+        List<UUID> ranking = new ArrayList<>(participants.getParticipants());
+        ranking.sort(Comparator.comparingInt((UUID id) -> goalManager.getPoints(id)).reversed());
 
-        Bukkit.broadcast(prefixer.apply(Component.text("Final Scores", NamedTextColor.GOLD, TextDecoration.BOLD)));
-        if (ranking.isEmpty()) {
-            Bukkit.broadcast(prefixer.apply(Component.text("No participants in this round.", NamedTextColor.GRAY)));
-        } else {
-            int rank = 1;
-            for (UUID playerId : ranking) {
-                String name = Bukkit.getOfflinePlayer(playerId).getName();
-                if (name == null) {
-                    name = playerId.toString();
-                }
-                int points = goalManager.getPoints(playerId);
-                Bukkit.broadcast(prefixer.apply(
-                    Component.text(rank + ". ", NamedTextColor.YELLOW)
-                        .append(Component.text(name, NamedTextColor.WHITE))
-                        .append(Component.text(" - ", NamedTextColor.DARK_GRAY))
-                        .append(Component.text(points + " pts", NamedTextColor.AQUA))
-                ));
-                rank++;
-            }
-        }
-
-        if (timerBossBar != null) {
-            timerBossBar.progress(0.0f);
-            timerBossBar.name(bossBarTime("00:00"));
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                player.hideBossBar(timerBossBar);
-            }
-        }
-
+        List<RoundDisplay.RankEntry> entries = ranking.stream()
+            .map(id -> {
+                String name = Bukkit.getOfflinePlayer(id).getName();
+                return new RoundDisplay.RankEntry(name != null ? name : id.toString(), goalManager.getPoints(id));
+            })
+            .toList();
+        display.broadcastRanking(entries);
+        display.hideBossBar();
+        
+        // We mark worlds for deletion, but don't immediately delete them.
+        // To allow players to teleport out and provide admins a chance to investigate or view worlds after round conclusion if needed.
         worldService.moveActiveToPreviousRound();
-        roundParticipants.clear();
-    }
-
-    private void updateParticipantsPreparing(boolean preparing) {
-        for (UUID id : roundParticipants) {
-            Player p = Bukkit.getPlayer(id);
-            if (p != null && p.isOnline()) {
-                try {
-                    p.setInvulnerable(preparing);
-                    p.setSilent(preparing);
-                    p.setCanPickupItems(!preparing);
-                } catch (Exception ignored) {
-                }
-            }
-        }
-    }
-
-    private void updateTimerDisplay() {
-        if (!timer.hasLimit()) {
-            return;
-        }
-
-        long remainingSeconds = timer.getRemainingSeconds();
-        String display = formatClock(remainingSeconds);
-
-        if (timerBossBar != null) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                player.showBossBar(timerBossBar);
-            }
-
-            float progress = (float) ((double) timer.getRemainingMillis() / (double) timer.getLimitMillis());
-            progress = Math.max(0.0f, Math.min(1.0f, progress));
-            timerBossBar.progress(progress);
-            timerBossBar.name(bossBarTime(display));
-        }
-    }
-
-    private String formatClock(long totalSeconds) {
-        long minutes = totalSeconds / 60;
-        long seconds = totalSeconds % 60;
-        return String.format("%02d:%02d", minutes, seconds);
-    }
-
-    private Component bossBarTime(String display) {
-        return Component.text("Time Left: ", NamedTextColor.AQUA)
-            .append(Component.text(display, NamedTextColor.WHITE, TextDecoration.BOLD));
+        participants.clear();
     }
 }

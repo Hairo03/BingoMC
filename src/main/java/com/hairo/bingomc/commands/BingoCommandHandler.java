@@ -71,6 +71,7 @@ public class BingoCommandHandler {
             }
 
             Bukkit.getScheduler().runTask(plugin, () -> {
+                roundService.primeStartingParticipants();
                 roundService.showStartingTitle();
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     long selectedSeed = newGameGui.getWorldSeed();
@@ -89,7 +90,7 @@ public class BingoCommandHandler {
     }
 
     public boolean handleStopCommand(CommandSender sender) {
-        if (!roundService.isGameRunning() && !roundService.isPreparationActive()) {
+        if (!roundService.isGameRunning() && !roundService.isGamePreparing()) {
             sender.sendMessage(prefixer.apply(Component.text("No Bingo round is currently running.", NamedTextColor.YELLOW)));
             return true;
         }
