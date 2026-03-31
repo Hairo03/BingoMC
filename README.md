@@ -129,6 +129,7 @@ If `goals.yml` is invalid at startup, plugin startup is aborted.
 - Add a permission-based admin join bypass, allowing admins to be excluded from joining the round automatically unless they explicitly opt in.
    - If admins didn't join, add ability to spectate, maybe with GUI
    - When a player completes a goal, admin should see link to tp to said player on click
+- Add pause and resume functionality, allowing rounds to be temporarily halted and later continued without resetting progress or timer. - Support server restart.
 - Change rejoining text to fit longer games
 - Ability to change, add and delete goals in-game through admin GUI
 - Cross-platform (Geyser, VIA Versions)
