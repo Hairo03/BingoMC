@@ -124,6 +124,7 @@ If `goals.yml` is invalid at startup, plugin startup is aborted.
 - Rejoining during an active round works, but the message is wrong.
 - Rejoining after round end doesn't work, you get put in your world instead of main world.
 - Leaving during preparation will cause issues, as you will keep your `applyPreparationState`
+- Add progress indicators for goals, e.g. "5/10 zombies killed", "2/3 diamond pickaxes crafted", etc.
 - Add a configurable ready check before round start, so servers can choose whether all players must confirm they are ready.
 - Add a permission-based admin join bypass, allowing admins to be excluded from joining the round automatically unless they explicitly opt in.
    - If admins didn't join, add ability to spectate, maybe with GUI
