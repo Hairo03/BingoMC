@@ -42,10 +42,10 @@ public class RoundTaskTicker {
         
         preparationTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             if (remaining[0] > 0) {
-                display.updateDisplays(remaining[0], countdownSeconds);
+                display.updatePreparationDisplay(remaining[0]);
                 remaining[0]--;
             } else {
-                display.updateDisplays(0, countdownSeconds);
+                display.updatePreparationDisplay(0);
                 stopPreparationTicker();
                 onPreparationComplete.run();
             }
@@ -75,7 +75,7 @@ public class RoundTaskTicker {
             }
 
             if (timer.hasLimit()) {
-                display.updateDisplays(timer.getRemainingSeconds(), timer.getLimitMillis() / 1000);
+                display.updateGameTimerDisplay(timer.getRemainingMillis(), timer.getLimitMillis());
             }
 
             for (UUID id : participants.getParticipants()) {

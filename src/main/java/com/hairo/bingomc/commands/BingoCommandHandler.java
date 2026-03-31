@@ -71,6 +71,7 @@ public class BingoCommandHandler {
             }
 
             Bukkit.getScheduler().runTask(plugin, () -> {
+                roundService.primeStartingParticipants();
                 roundService.showStartingTitle();
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     long selectedSeed = newGameGui.getWorldSeed();

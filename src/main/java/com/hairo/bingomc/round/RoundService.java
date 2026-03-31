@@ -129,12 +129,12 @@ public class RoundService {
     public boolean startRound(long worldSeed) {
         return startRound(worldSeed, defaultGameDurationSeconds);
     }
-
+    
     public boolean startRound(long worldSeed, long selectedDurationSeconds) {
         if (gameRunning || gamePreparing) {
             return false;
         }
-
+        
         long roundDurationSeconds = selectedDurationSeconds > 0 ? selectedDurationSeconds : defaultGameDurationSeconds;
 
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
@@ -147,9 +147,12 @@ public class RoundService {
             return false;
         }
 
-        // Verify worlds exist for all players before mutating state
-        for (Player player : onlinePlayers) {
-            PlayerWorldSet worldSet = createdWorldSets.get(player.getUniqueId());
+        // Verify worlds exist for all participants before mutating state
+        for (UUID participantId : participants.getParticipants()) {
+            Player player = Bukkit.getPlayer(participantId);
+            if (player == null) continue;
+            
+            PlayerWorldSet worldSet = createdWorldSets.get(participantId);
             if (worldSet == null) {
                 plugin.getLogger().severe("Player world missing after creation for " + player.getName());
                 worldService.cleanupWorldSets(createdWorldSets.values());
@@ -167,25 +170,13 @@ public class RoundService {
 
         // Activate and teleport players synchronously to ensure they're in their round worlds
         worldService.activateRoundWorldSets(createdWorldSets);
-        for (Player player : onlinePlayers) {
-            PlayerWorldSet worldSet = createdWorldSets.get(player.getUniqueId());
-            World playerWorld = Bukkit.getWorld(worldSet.overworldName());
-            try {
-                player.teleport(playerWorld.getSpawnLocation());
-            } catch (Exception e) {
-                plugin.getLogger().severe("Failed to teleport player " + player.getName() + ": " + e.getMessage());
-                worldService.cleanupWorldSets(createdWorldSets.values());
-                worldService.clearTrackedRoundWorlds();
-                return false;
-            }
-        }
-
-        // Initialize goal state and participant set only after worlds and teleports succeeded
+        
+        // Initialize goal state before teleportation
         goalManager.resetAllProgress();
-        participants.clear();
         try {
-            for (Player player : onlinePlayers) {
-                participants.add(player.getUniqueId());
+            for (UUID participantId : participants.getParticipants()) {
+                Player player = Bukkit.getPlayer(participantId);
+                if (player == null) continue;
                 goalManager.onRoundStart(player);
             }
         } catch (Exception e) {
@@ -196,6 +187,28 @@ public class RoundService {
             goalManager.resetAllProgress();
             return false;
         }
+
+        // Now teleport players
+        for (UUID participantId : participants.getParticipants()) {
+            Player player = Bukkit.getPlayer(participantId);
+            if (player == null) continue;
+
+            PlayerWorldSet worldSet = createdWorldSets.get(participantId);
+            World playerWorld = Bukkit.getWorld(worldSet.overworldName());
+            try {
+                player.teleport(playerWorld.getSpawnLocation());
+            } catch (Exception e) {
+                plugin.getLogger().severe("Failed to teleport player " + player.getName() + ": " + e.getMessage());
+                worldService.cleanupWorldSets(createdWorldSets.values());
+                worldService.clearTrackedRoundWorlds();
+                participants.clear();
+                goalManager.resetAllProgress();
+                return false;
+            }
+        }
+
+        // Show title and broadcast after teleportation, before scheduling tasks
+        display.broadcastPreparationStart(preparationCountdownSeconds);
 
         beginPreparation(roundDurationSeconds);
         return true;
@@ -224,6 +237,13 @@ public class RoundService {
             "Bingo round stopped early by " + actorName + "."
         );
         return true;
+    }
+
+    public void primeStartingParticipants() {
+        participants.clear();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            participants.add(player.getUniqueId());
+        }
     }
 
     public void showStartingTitle() {
@@ -259,13 +279,14 @@ public class RoundService {
         gamePreparing = true;
         participants.applyPreparationState(true);
 
-        display.broadcastMessage("Bingo round is starting! Prepare yourself...", NamedTextColor.GOLD);
         taskTicker.startPreparationTicker(preparationCountdownSeconds, this::launchRound);
     }
 
     private void launchRound() {
         gamePreparing = false;
         participants.applyPreparationState(false);
+
+        display.showGoTitle();
 
         timer.reset();
         timer.setLimitSeconds(pendingRoundDurationSeconds);
@@ -275,9 +296,7 @@ public class RoundService {
         taskTicker.startGameTicker(timer);
         gameRunning = true;
 
-        long minutes = pendingRoundDurationSeconds / 60;
-        display.broadcastMessage("Bingo round has started. You have " + minutes +
-            " minutes. Use /bingo goals to view your objectives.", NamedTextColor.GREEN);
+        display.broadcastRoundStart(pendingRoundDurationSeconds);
     }
 
     private void concludeRound(String broadcastMessage, String logMessage) {

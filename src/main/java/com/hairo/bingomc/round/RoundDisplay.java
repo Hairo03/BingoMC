@@ -10,9 +10,8 @@ import org.bukkit.entity.Player;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class RoundDisplay {
@@ -20,90 +19,94 @@ public class RoundDisplay {
     private final Function<Component, Component> prefixer;
     private final BossBar timerBossBar;
     private final RoundParticipants participants;
-    private final Set<UUID> bossBarViewers = new HashSet<>();
 
     public RoundDisplay(Function<Component, Component> prefixer, RoundParticipants participants) {
         this.prefixer = prefixer;
         this.participants = participants;
         this.timerBossBar = BossBar.bossBar(
-            Component.empty(),
-            0.0f,
-            BossBar.Color.BLUE,
-            BossBar.Overlay.PROGRESS
-        );
+                bossBarTime("00:00"),
+                0.0f,
+                BossBar.Color.BLUE,
+                BossBar.Overlay.PROGRESS);
     }
 
     public void showStartingTitle() {
         Title startingTitle = Title.title(
-            Component.text("Bingo game starting...", NamedTextColor.GOLD),
-            Component.empty(),
-            Title.Times.times(Duration.ofMillis(150), Duration.ofSeconds(5), Duration.ofMillis(200))
-        );
-        for (UUID id : participants.getParticipants()) {
-            Player player = Bukkit.getPlayer(id);
-            if (player != null && player.isOnline()) {
-                player.showTitle(startingTitle);
-            }
-        }
+                Component.text("Bingo game starting...", NamedTextColor.GOLD),
+                Component.empty(),
+                Title.Times.times(Duration.ofMillis(150), Duration.ofSeconds(5), Duration.ofMillis(200)));
+        forEachOnlineParticipant(player -> player.showTitle(startingTitle));
     }
 
     public void clearStartingTitle() {
-        for (UUID id : participants.getParticipants()) {
-            Player player = Bukkit.getPlayer(id);
-            if (player != null && player.isOnline()) {
-                player.resetTitle();
-            }
-        }
+        forEachOnlineParticipant(Player::resetTitle);
     }
 
-    /**
-     * Updates all player displays for both preparation and active phases.
-     * Shows a highlighted countdown title in the last 10 seconds.
-     */
-    public void updateDisplays(long remainingSeconds, long totalSeconds) {
-        float progress = totalSeconds > 0 ? (float) remainingSeconds / totalSeconds : 0.0f;
-        timerBossBar.progress(Math.max(0.0f, Math.min(1.0f, progress)));
-        timerBossBar.name(
-            Component.text("Time Left: ", NamedTextColor.AQUA)
-                .append(Component.text(formatClock(remainingSeconds), NamedTextColor.WHITE, TextDecoration.BOLD))
-        );
+    public void showGoTitle() {
+        Title goTitle = Title.title(
+                Component.text("GO!", NamedTextColor.GREEN, TextDecoration.BOLD),
+                Component.empty(),
+                Title.Times.times(Duration.ofMillis(0), Duration.ofSeconds(1), Duration.ofMillis(500)));
+        forEachOnlineParticipant(player -> player.showTitle(goTitle));
+    }
 
-        Title title = null;
+    public void updatePreparationDisplay(long remainingSeconds) {
+        String timeDisplay = formatClock(remainingSeconds);
+
+        // Action bar for participants
+        if (remainingSeconds > 10) {
+            Component actionBar = Component.text("Round starts in: ", NamedTextColor.YELLOW)
+                    .append(Component.text(timeDisplay, NamedTextColor.WHITE, TextDecoration.BOLD));
+            forEachOnlineParticipant(player -> player.sendActionBar(actionBar));
+        } else {
+            // Clear immediately once we switch to title countdown mode.
+            forEachOnlineParticipant(player -> player.sendActionBar(Component.empty()));
+        }
+
+        // Countdown title in last 10 seconds
         if (remainingSeconds <= 10) {
             NamedTextColor countColor = remainingSeconds <= 5 ? NamedTextColor.YELLOW : NamedTextColor.GREEN;
-            title = Title.title(
-                Component.text(remainingSeconds, countColor, TextDecoration.BOLD),
-                Component.empty(),
-                Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(1100), Duration.ofMillis(0))
-            );
-        }
-
-        // Remove bossbar from viewers that are no longer participants or are offline
-        var currentParticipants = participants.getParticipants();
-        var viewersCopy = Set.copyOf(bossBarViewers);
-        for (UUID viewerId : viewersCopy) {
-            if (!currentParticipants.contains(viewerId)) {
-                Player p = Bukkit.getPlayer(viewerId);
-                if (p != null && p.isOnline()) {
-                    p.hideBossBar(timerBossBar);
-                }
-                bossBarViewers.remove(viewerId);
-            }
-        }
-
-        for (UUID id : currentParticipants) {
-            Player player = Bukkit.getPlayer(id);
-            if (player != null && player.isOnline()) {
-                if (!bossBarViewers.contains(id)) {
-                    player.showBossBar(timerBossBar);
-                    bossBarViewers.add(id);
-                }
-                if (title != null) player.showTitle(title);
-            }
+            Title countTitle = Title.title(
+                    Component.text(remainingSeconds, countColor, TextDecoration.BOLD),
+                    Component.empty(),
+                    Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(1100), Duration.ofMillis(0)));
+            forEachOnlineParticipant(player -> player.showTitle(countTitle));
         }
     }
 
-    public record RankEntry(String name, int points) {}
+    public void broadcastPreparationStart(long countdownSeconds) {
+        broadcastMessage(
+                Component.text("Bingo round is starting! Prepare yourself. Round begins in ", NamedTextColor.GOLD)
+                        .append(Component.text(formatClock(countdownSeconds), NamedTextColor.AQUA, TextDecoration.BOLD))
+                        .append(Component.text("...", NamedTextColor.GOLD)));
+    }
+
+    public void broadcastRoundStart(long durationSeconds) {
+        broadcastMessage(
+                Component.text("Bingo round has started. You have ", NamedTextColor.GREEN)
+                        .append(Component.text(formatClock(durationSeconds), NamedTextColor.AQUA, TextDecoration.BOLD))
+                        .append(Component.text(" remaining.", NamedTextColor.GREEN))
+                        .append(Component.text(" Use ", NamedTextColor.YELLOW))
+                        .append(Component.text("/bingo goals", NamedTextColor.WHITE, TextDecoration.BOLD))
+                        .append(Component.text(" to view your objectives.", NamedTextColor.YELLOW)));
+    }
+
+    public void updateGameTimerDisplay(long remainingMillis, long limitMillis) {
+        long remainingSeconds = remainingMillis / 1000;
+        String display = formatClock(remainingSeconds);
+
+        if (timerBossBar != null) {
+            forEachOnlineParticipant(player -> player.showBossBar(timerBossBar));
+
+            float progress = limitMillis > 0 ? (float) remainingMillis / (float) limitMillis : 0.0f;
+            progress = Math.max(0.0f, Math.min(1.0f, progress));
+            timerBossBar.progress(progress);
+            timerBossBar.name(bossBarTime(display));
+        }
+    }
+
+    public record RankEntry(String name, int points) {
+    }
 
     public void broadcastRanking(List<RankEntry> ranking) {
         broadcastMessage("Final Scores", NamedTextColor.GOLD);
@@ -123,17 +126,15 @@ public class RoundDisplay {
     }
 
     public void hideBossBar() {
-        for (UUID id : bossBarViewers) {
-            Player player = Bukkit.getPlayer(id);
-            if (player != null && player.isOnline()) {
-                player.hideBossBar(timerBossBar);
-            }
-        }
-        bossBarViewers.clear();
+        forEachOnlineParticipant(player -> player.hideBossBar(timerBossBar));
     }
 
     public void broadcastMessage(String message, NamedTextColor color) {
         Bukkit.broadcast(prefixer.apply(Component.text(message, color)));
+    }
+
+    public void broadcastMessage(Component message) {
+        Bukkit.broadcast(prefixer.apply(message));
     }
 
     public void broadcastComponent(Component message) {
@@ -145,6 +146,22 @@ public class RoundDisplay {
     }
 
     private String formatClock(long totalSeconds) {
-        return String.format("%02d:%02d", totalSeconds / 60, totalSeconds % 60);
+        long minutes = totalSeconds / 60;
+        long seconds = totalSeconds % 60;
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
+    private Component bossBarTime(String display) {
+        return Component.text("Time Left: ", NamedTextColor.AQUA)
+                .append(Component.text(display, NamedTextColor.WHITE, TextDecoration.BOLD));
+    }
+
+    private void forEachOnlineParticipant(Consumer<Player> action) {
+        for (UUID id : participants.getParticipants()) {
+            Player player = Bukkit.getPlayer(id);
+            if (player != null && player.isOnline()) {
+                action.accept(player);
+            }
+        }
     }
 }
