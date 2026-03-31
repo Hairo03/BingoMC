@@ -71,16 +71,16 @@ public class BingoCommandHandler {
             }
 
             Bukkit.getScheduler().runTask(plugin, () -> {
+                roundService.primeStartingParticipants();
                 roundService.showStartingTitle();
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     long selectedSeed = newGameGui.getWorldSeed();
                     long selectedTimeLimit = newGameGui.getTimeLimit();
                     boolean started = roundService.startRound(selectedSeed, selectedTimeLimit);
-                    roundService.clearStartingTitle();
-
                     if (started) {
-                        sender.sendMessage(prefixer.apply(Component.text("Bingo round started.", NamedTextColor.GREEN)));
+                        roundService.clearStartingTitle();
                     } else {
+                        roundService.clearStartingTitle();
                         sender.sendMessage(prefixer.apply(Component.text("Could not start Bingo round.", NamedTextColor.RED)));
                     }
                 }, 1L);
@@ -90,7 +90,7 @@ public class BingoCommandHandler {
     }
 
     public boolean handleStopCommand(CommandSender sender) {
-        if (!roundService.isGameRunning()) {
+        if (!roundService.isGameRunning() && !roundService.isGamePreparing()) {
             sender.sendMessage(prefixer.apply(Component.text("No Bingo round is currently running.", NamedTextColor.YELLOW)));
             return true;
         }

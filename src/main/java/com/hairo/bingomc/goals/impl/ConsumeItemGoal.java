@@ -1,29 +1,32 @@
 package com.hairo.bingomc.goals.impl;
 
 import java.util.EnumSet;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import com.hairo.bingomc.goals.core.AmountBasedGoal;
+import com.hairo.bingomc.goals.core.ConsumeAwareGoal;
 import com.hairo.bingomc.goals.core.GoalTrigger;
 import com.hairo.bingomc.goals.core.PlayerGoal;
-import com.hairo.bingomc.goals.util.ConsumeTracker;
+import com.hairo.bingomc.goals.core.RoundAwareGoal;
 
-public class ConsumeItemGoal implements PlayerGoal, AmountBasedGoal {
+public class ConsumeItemGoal implements PlayerGoal, AmountBasedGoal, ConsumeAwareGoal, RoundAwareGoal {
     private final String id;
     private final Material item;
     private final int amount;
-    private final ConsumeTracker consumeTracker;
     private final Material icon;
 
-    public ConsumeItemGoal(String id, Material item, int amount, ConsumeTracker consumeTracker, Material icon) {
+    private final Map<UUID, Integer> consumeCount = new HashMap<>();
+
+    public ConsumeItemGoal(String id, Material item, int amount, Material icon) {
         this.id = id;
         this.item = item;
         this.amount = amount;
-        this.consumeTracker = consumeTracker;
         this.icon = icon;
     }
 
@@ -33,9 +36,9 @@ public class ConsumeItemGoal implements PlayerGoal, AmountBasedGoal {
     }
 
     @Override
-	public Material icon() {
-		return icon;
-	}
+    public Material icon() {
+        return icon;
+    }
 
     @Override
     public int amount() {
@@ -48,9 +51,26 @@ public class ConsumeItemGoal implements PlayerGoal, AmountBasedGoal {
     }
 
     @Override
+    public void onItemConsumed(Player player, Material material) {
+        if (material == item) {
+            UUID playerId = player.getUniqueId();
+            consumeCount.put(playerId, consumeCount.getOrDefault(playerId, 0) + 1);
+        }
+    }
+
+    @Override
     public boolean isComplete(Player player) {
-        List<Material> consumed = consumeTracker.getConsumedItems(player);
-        return consumed.stream().filter(m -> m == item).count() >= amount;
+        return consumeCount.getOrDefault(player.getUniqueId(), 0) >= amount;
+    }
+
+    @Override
+    public void onRoundReset() {
+        consumeCount.clear();
+    }
+
+    @Override
+    public void onRoundStart(Player player) {
+        consumeCount.put(player.getUniqueId(), 0);
     }
 
     @Override
