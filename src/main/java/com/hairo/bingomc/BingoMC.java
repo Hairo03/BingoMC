@@ -47,9 +47,13 @@ public class BingoMC extends JavaPlugin implements Listener {
         goalsViewerGui = new GoalsViewerGui(this);
         goalsAdminGui = new GoalsAdminGui(this);
         newGameGui = new NewGameGui();
-        InvUI.getInstance().setPlugin(this);
+        try {
+            InvUI.getInstance().setPlugin(this);
+        } catch (IllegalStateException e) {
+            getLogger().warning("InvUI plugin already set: " + e.getMessage());
+        }
 
-        String mainWorldName = Bukkit.getWorlds().get(0).getName();
+        String mainWorldName = Bukkit.getWorlds().isEmpty() ? "world" : Bukkit.getWorlds().get(0).getName();
         BingoWorldService worldService = new BingoWorldService(this);
         if (!worldService.initializeApis()) {
             getServer().getPluginManager().disablePlugin(this);
