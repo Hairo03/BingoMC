@@ -1,5 +1,31 @@
 goals:
   # EASY (7)
+  - id: easy_reach_y_level_100
+    difficulty: easy
+    type: reach_y_level
+    level: 100
+    direction: UP
+    icon: LADDER
+    points: 25
+    enabled: true
+
+  - id: easy_obtain_logs_16
+    difficulty: easy
+    type: obtain_item_type
+    material_type: logs
+    icon: OAK_LOG
+    amount: 16
+    points: 25
+    enabled: true
+
+  - id: easy_enter_village
+    difficulty: easy
+    type: enter_structure
+    structure: village_plains
+    icon: BELL
+    points: 25
+    enabled: true
+
   - id: easy_collect_oak_log_16
     difficulty: easy
     type: obtain_item

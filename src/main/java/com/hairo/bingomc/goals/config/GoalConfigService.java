@@ -1,5 +1,8 @@
 package com.hairo.bingomc.goals.config;
 
+import com.hairo.bingomc.goals.impl.ReachYLevelGoal;
+import com.hairo.bingomc.goals.impl.EnterStructureGoal;
+import com.hairo.bingomc.goals.impl.ObtainItemTypeGoal;
 import com.hairo.bingomc.goals.impl.ChangeDimensionGoal;
 import com.hairo.bingomc.goals.impl.ConsumeItemGoal;
 import com.hairo.bingomc.goals.impl.ItemCraftGoal;
@@ -14,6 +17,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import org.bukkit.Bukkit;
+import org.bukkit.Tag;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World.Environment;
@@ -40,7 +45,10 @@ public final class GoalConfigService {
                 "obtain_item", (id, points, section) -> new LoadedGoal(new ObtainItemGoal(id, parseMaterial(section, "material"), parseAmount(section, "amount", 1), parseIconMaterial(section, "icon")), points),
                 "kill_entity", (id, points, section) -> new LoadedGoal(new KillEntityGoal(id, parseEntityType(section, "entity_type"), parseAmount(section, "amount", 1), parseIconMaterial(section, "icon")), points),
                 "unlock_advancement", (id, points, section) -> new LoadedGoal(new UnlockAdvancementGoal(id, parseAdvancementKey(section, "advancement_key"), parseIconMaterial(section, "icon")), points),
-                "change_dimension", (id, points, section) -> new LoadedGoal(new ChangeDimensionGoal(id, parseEnvironment(section, "dimension"), parseIconMaterial(section, "icon")), points));
+                "change_dimension", (id, points, section) -> new LoadedGoal(new ChangeDimensionGoal(id, parseEnvironment(section, "dimension"), parseIconMaterial(section, "icon")), points),
+                "reach_y_level", (id, points, section) -> new LoadedGoal(new ReachYLevelGoal(id, readInt(section, "level", 0), parseDirection(section, "direction"), parseIconMaterial(section, "icon")), points),
+                "enter_structure", (id, points, section) -> new LoadedGoal(new EnterStructureGoal(id, parseNamespacedKey(section, "structure"), parseIconMaterial(section, "icon")), points),
+                "obtain_item_type", (id, points, section) -> new LoadedGoal(new ObtainItemTypeGoal(id, parseMaterialType(section, "material_type"), parseNamespacedKey(section, "material_type"), parseAmount(section, "amount", 1), parseIconMaterial(section, "icon")), points));
     }
 
     public GoalLoadResult loadGoals() {
@@ -216,6 +224,42 @@ public final class GoalConfigService {
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException("Unknown dimension: " + value);
         }
+    }
+
+    private NamespacedKey parseNamespacedKey(Map<?, ?> section, String key) {
+        String value = readString(section, key).trim().toLowerCase(Locale.ROOT);
+        if (value.isEmpty()) {
+            throw new IllegalArgumentException("Missing " + key);
+        }
+        if (!value.contains(":")) {
+            value = "minecraft:" + value;
+        }
+        NamespacedKey parsed = NamespacedKey.fromString(value);
+        if (parsed == null) {
+            throw new IllegalArgumentException("Invalid namespaced key in " + key + ": " + value);
+        }
+        return parsed;
+    }
+
+    private ReachYLevelGoal.Direction parseDirection(Map<?, ?> section, String key) {
+        String value = readString(section, key).trim().toUpperCase(Locale.ROOT);
+        if (value.isEmpty()) {
+            throw new IllegalArgumentException("Missing direction, expected UP or DOWN");
+        }
+        try {
+            return ReachYLevelGoal.Direction.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Unknown direction: " + value + ", expected UP or DOWN");
+        }
+    }
+
+    private Tag<Material> parseMaterialType(Map<?, ?> section, String key) {
+        NamespacedKey tagKey = parseNamespacedKey(section, key);
+        Tag<Material> tag = Bukkit.getTag(Tag.REGISTRY_ITEMS, tagKey, Material.class);
+        if (tag == null) {
+            throw new IllegalArgumentException("Unknown item type tag: " + tagKey);
+        }
+        return tag;
     }
 
     private Material parseIconMaterial(Map<?, ?> section, String key) {
