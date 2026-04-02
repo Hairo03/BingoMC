@@ -2,6 +2,7 @@ package com.hairo.bingomc;
 
 import com.hairo.bingomc.goals.core.GoalManager;
 import com.hairo.bingomc.goals.config.GoalConfigService;
+import com.hairo.bingomc.goals.config.GoalOptionCatalog;
 import com.hairo.bingomc.goals.config.GoalsService;
 import com.hairo.bingomc.commands.BingoCommandHandler;
 import com.hairo.bingomc.gui.GoalsAdminGui;
@@ -32,6 +33,7 @@ public class BingoMC extends JavaPlugin implements Listener {
     private static final long DEFAULT_GAME_DURATION_SECONDS = 5L * 60L;
 
     private final GoalManager goalManager = new GoalManager();
+    private final GoalOptionCatalog goalOptionCatalog = new GoalOptionCatalog();
     private GoalsViewerGui goalsViewerGui;
     private GoalsAdminGui goalsAdminGui;
     private NewGameGui newGameGui;
@@ -73,6 +75,7 @@ public class BingoMC extends JavaPlugin implements Listener {
             this,
             roundService,
             goalsService,
+            goalOptionCatalog,
             goalsViewerGui,
             goalsAdminGui,
             newGameGui,

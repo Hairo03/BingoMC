@@ -21,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Tag;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.World.Environment;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
@@ -33,6 +34,12 @@ public final class GoalConfigService {
     private interface GoalFactory {
         LoadedGoal create(String id, int points, Map<?, ?> section);
     }
+
+    private static final Map<String, Environment> DIMENSION_MAP = Map.of(
+            "minecraft:overworld", Environment.NORMAL,
+            "minecraft:the_nether", Environment.NETHER,
+            "minecraft:the_end", Environment.THE_END
+    );
 
     private final Map<String, GoalFactory> factories;
 
@@ -152,7 +159,7 @@ public final class GoalConfigService {
     }
 
     private Material parseMaterial(Map<?, ?> section, String key) {
-        String value = readString(section, key).trim().toUpperCase(Locale.ROOT);
+        String value = readString(section, key).trim().toLowerCase(Locale.ROOT);
         if (value.isEmpty()) {
             throw new IllegalArgumentException("Missing material");
         }
@@ -164,19 +171,25 @@ public final class GoalConfigService {
     }
 
     private EntityType parseEntityType(Map<?, ?> section, String key) {
-        String value = readString(section, key).trim().toUpperCase(Locale.ROOT);
+        String value = readString(section, key).trim().toLowerCase(Locale.ROOT);
         if (value.isEmpty()) {
             throw new IllegalArgumentException("Missing entity_type");
         }
-        try {
-            EntityType entityType = EntityType.valueOf(value);
-            if (!entityType.isSpawnable()) {
-                throw new IllegalArgumentException("Entity type is not spawnable: " + value);
-            }
-            return entityType;
-        } catch (IllegalArgumentException ex) {
+        if (!value.contains(":")) {
+            value = "minecraft:" + value;
+        }
+        NamespacedKey nsKey = NamespacedKey.fromString(value);
+        if (nsKey == null) {
+            throw new IllegalArgumentException("Invalid entity type key: " + value);
+        }
+        EntityType entityType = Registry.ENTITY_TYPE.get(nsKey);
+        if (entityType == null) {
             throw new IllegalArgumentException("Unknown entity type: " + value);
         }
+        if (!entityType.isSpawnable()) {
+            throw new IllegalArgumentException("Entity type is not spawnable: " + value);
+        }
+        return entityType;
     }
 
     private int parseAmount(Map<?, ?> section, String key, int min) {
@@ -215,15 +228,18 @@ public final class GoalConfigService {
     }
 
     private Environment parseEnvironment(Map<?, ?> section, String string) {
-        String value = readString(section, string).trim().toUpperCase(Locale.ROOT);
+        String value = readString(section, string).trim().toLowerCase(Locale.ROOT);
         if (value.isEmpty()) {
             throw new IllegalArgumentException("Missing dimension");
         }
-        try {
-            return Environment.valueOf(value);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException("Unknown dimension: " + value);
+        if (!value.contains(":")) {
+            value = "minecraft:" + value;
         }
+        Environment env = DIMENSION_MAP.get(value);
+        if (env == null) {
+            throw new IllegalArgumentException("Unknown dimension: " + value + " (expected minecraft:overworld, minecraft:the_nether, or minecraft:the_end)");
+        }
+        return env;
     }
 
     private NamespacedKey parseNamespacedKey(Map<?, ?> section, String key) {
@@ -263,7 +279,7 @@ public final class GoalConfigService {
     }
 
     private Material parseIconMaterial(Map<?, ?> section, String key) {
-        String value = readString(section, key).trim().toUpperCase(Locale.ROOT);
+        String value = readString(section, key).trim().toLowerCase(Locale.ROOT);
         if (value.isEmpty()) {
             return Material.ORANGE_WOOL; // default icon
         }
