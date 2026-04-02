@@ -437,7 +437,7 @@ public class BingoWorldService {
             }
 
             WorldGroup group = manager.newEmptyGroup(worldSet.inventoryGroupName());
-            group.getShares().mergeShares(Sharables.ALL_INVENTORY);
+            group.getShares().mergeShares(Sharables.ALL_DEFAULT);
             group.addWorld(worldSet.overworldName(), false);
             group.addWorld(worldSet.netherName(), false);
             group.addWorld(worldSet.endName(), false);
