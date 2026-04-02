@@ -94,15 +94,6 @@ public class GoalManager {
                         .build()
                 );
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
-                player.showTitle(Title.title(
-                    Component.text("Goal Complete!", NamedTextColor.GREEN, TextDecoration.BOLD),
-                    Component.text(goal.descriptionText(), NamedTextColor.WHITE),
-                    Title.Times.times(
-                        Duration.ofMillis(250),
-                        Duration.ofMillis(2000),
-                        Duration.ofMillis(500)
-                    )
-                ));
             } else if (trigger != GoalTrigger.PERIODIC && goal instanceof AmountBasedGoal amountGoal) {
                 int current = amountGoal.currentProgress(player);
                 if (current > 0) {

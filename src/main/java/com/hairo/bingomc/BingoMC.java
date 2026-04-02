@@ -112,6 +112,9 @@ public class BingoMC extends JavaPlugin implements Listener {
         if (roundService != null) {
             roundService.onDisable();
         }
+        if (sidebarManager != null) {
+            sidebarManager.close();
+        }
         getLogger().info("BingoMC has been disabled!");
     }
 

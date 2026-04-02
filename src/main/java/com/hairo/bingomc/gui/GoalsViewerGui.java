@@ -4,6 +4,7 @@ import com.hairo.bingomc.BingoMC;
 import com.hairo.bingomc.goals.core.AmountBasedGoal;
 import com.hairo.bingomc.goals.core.PlayerGoal;
 
+import io.papermc.paper.datacomponent.DataComponentTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +85,7 @@ public final class GoalsViewerGui {
 
                         return new ItemBuilder(finalIcon)
                             .setName("<yellow>" + finalGoal.descriptionText())
-                            
+                            .hideTooltip(DataComponentTypes.ATTRIBUTE_MODIFIERS, DataComponentTypes.TOOL)
                             .addLoreLines(lore.toArray(new String[0]))
                             .setAmount(stackAmount);
                     })

@@ -343,6 +343,10 @@ public class RoundService {
     private void concludeRound(String broadcastMessage, String logMessage) {
         gameRunning = false;
 
+        if (sidebarManager != null) {
+            sidebarManager.clearAll();
+        }
+
         World mainWorld = Bukkit.getWorld(mainWorldName);
         if (mainWorld != null) {
             for (UUID playerId : participants.getParticipants()) {
@@ -369,9 +373,6 @@ public class RoundService {
         display.hideBossBar();
 
         // Clear sidebars and show round summary GUI
-        if (sidebarManager != null) {
-            sidebarManager.clearAll();
-        }
         if (goalsViewerGui != null) {
             final List<UUID> participantsCopy = new ArrayList<>(participants.getParticipants());
             Bukkit.getScheduler().runTaskLater(plugin, () -> {

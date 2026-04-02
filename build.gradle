@@ -19,26 +19,14 @@ repositories {
     name = 'onarandombox'
     url = uri('https://repo.onarandombox.com/content/groups/public/')
   }
-  maven {
-    name = 'jitpack'
-    url = uri('https://jitpack.io')
-  }
-  maven {
-    name = 'tcoded'
-    url = uri('https://repo.tcoded.com/releases')
-  }
-  maven {
-    name = 'viaversion'
-    url = uri('https://repo.viaversion.com')
-  }
   mavenCentral()
 }
 
 dependencies {
-  compileOnly 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
+  compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
   implementation 'xyz.xenondevs.invui:invui:2.0.0-beta.1'
-  implementation 'com.github.CatCoderr:ProtocolSidebar:master-SNAPSHOT'
-  implementation 'com.tcoded:FoliaLib:0.5.1'
+  implementation("net.megavex:scoreboard-library-api:2.7.1")
+  runtimeOnly("net.megavex:scoreboard-library-implementation:2.7.1")
   compileOnly 'org.mvplugins.multiverse.core:multiverse-core:5.5.3'
   compileOnly 'org.mvplugins.multiverse.netherportals:multiverse-netherportals:5.0.4'
   compileOnly 'org.mvplugins.multiverse.inventories:multiverse-inventories:5.3.2'
@@ -57,7 +45,7 @@ tasks.withType(JavaCompile).configureEach {
 tasks.shadowJar {
   archiveClassifier.set('dev')
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  relocate 'com.tcoded.folialib', 'com.hairo.bingomc.libs.folialib'
+  relocate 'net.megavex.scoreboardlibrary', 'com.hairo.bingomc.libs.scoreboardlibrary'
 }
 
 build.dependsOn shadowJar
