@@ -26,3 +26,6 @@ permissions:
   bingomc.stop:
     description: Allows stopping a Bingo round
     default: op
+  bingomc.export:
+    description: Allows exporting possible goal configuration options
+    default: op
