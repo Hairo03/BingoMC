@@ -118,7 +118,6 @@ If `goals.yml` is invalid at startup, plugin startup is aborted.
 
 ## TODO
 
-- Fix Nether/End, didn't keep inventory and gamemode changed.
 - Add more goal types for other playstyles, e.g. exploration, fishing, building, etc.
  - Redo default goals, and maybe allow even more goals per round.
 - Rejoining during an active round works, but the message is wrong.
