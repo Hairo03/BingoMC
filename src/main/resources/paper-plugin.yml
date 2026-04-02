@@ -3,14 +3,21 @@ version: 1.0.0-SNAPSHOT
 main: com.hairo.bingomc.BingoMC
 api-version: "1.21"
 author: Hairo
-depend:
-  - Multiverse-Core
-  - Multiverse-NetherPortals
-  - Multiverse-Inventories
+dependencies:
+  server:
+    Multiverse-Core:
+      load: BEFORE
+      required: true
+    Multiverse-NetherPortals:
+      load: BEFORE
+      required: true
+    Multiverse-Inventories:
+      load: BEFORE
+      required: true
 permissions:
   bingomc.goals.user:
     description: Allows opening the goals UI and viewing goals
-    default: notop
+    default: not op
   bingomc.goals.admin:
     description: Allows opening the goals admin UI and managing goals
     default: op

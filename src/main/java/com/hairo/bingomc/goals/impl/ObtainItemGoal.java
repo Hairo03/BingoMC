@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.hairo.bingomc.goals.core.AmountBasedGoal;
 import com.hairo.bingomc.goals.core.GoalTrigger;
@@ -44,7 +45,22 @@ public class ObtainItemGoal implements PlayerGoal, AmountBasedGoal {
     }
 
     @Override
-    public String descriptionText() {
+    public int currentProgress(Player player) {
+        int count = 0;
+        for (ItemStack stack : player.getInventory().getContents()) {
+            if (stack != null && stack.getType() == item) {
+                count += stack.getAmount();
+            }
+        }
+        return Math.min(count, amount);
+    }
+
+    @Override
+    public String descriptionText(boolean shortFormat) {
+        if (shortFormat) {
+            return "Obtain " + item.name().toLowerCase().replace('_', ' ');
+        }
+
         return "Obtain " + amount + " " + item.name().toLowerCase().replace('_', ' ');
     }
 

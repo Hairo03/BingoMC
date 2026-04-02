@@ -8,9 +8,13 @@ import java.util.Map;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
+import java.time.Duration;
+import java.util.function.Consumer;
+
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.title.Title;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -21,6 +25,11 @@ public class GoalManager {
     private final List<PlayerGoal> goals = new ArrayList<>();
     private final Map<String, Integer> pointsByGoalId = new HashMap<>();
     private final Map<UUID, Set<String>> completedByPlayer = new HashMap<>();
+    private Consumer<Player> completionCallback;
+
+    public void setCompletionCallback(Consumer<Player> callback) {
+        this.completionCallback = callback;
+    }
 
     public void registerGoal(PlayerGoal goal) {
         registerGoal(goal, 1);
@@ -58,6 +67,7 @@ public class GoalManager {
 
     public void evaluate(Player player, GoalTrigger trigger) {
         Set<String> completed = completedByPlayer.computeIfAbsent(player.getUniqueId(), ignored -> new HashSet<>());
+        boolean anyCompleted = false;
 
         for (PlayerGoal goal : goals) {
             if (!goal.triggers().contains(trigger)) {
@@ -71,6 +81,7 @@ public class GoalManager {
 
             if (goal.isComplete(player)) {
                 completed.add(id);
+                anyCompleted = true;
                 int points = pointsByGoalId.getOrDefault(id, 1);
                 Bukkit.broadcast(
                     Component.text()
@@ -83,7 +94,29 @@ public class GoalManager {
                         .build()
                 );
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+                player.showTitle(Title.title(
+                    Component.text("Goal Complete!", NamedTextColor.GREEN, TextDecoration.BOLD),
+                    Component.text(goal.descriptionText(), NamedTextColor.WHITE),
+                    Title.Times.times(
+                        Duration.ofMillis(250),
+                        Duration.ofMillis(2000),
+                        Duration.ofMillis(500)
+                    )
+                ));
+            } else if (trigger != GoalTrigger.PERIODIC && goal instanceof AmountBasedGoal amountGoal) {
+                int current = amountGoal.currentProgress(player);
+                if (current > 0) {
+                    player.sendActionBar(
+                        Component.text(goal.descriptionText() + "  ", NamedTextColor.YELLOW)
+                            .append(Component.text(current + "/" + amountGoal.amount(),
+                                NamedTextColor.WHITE, TextDecoration.BOLD))
+                    );
+                }
             }
+        }
+
+        if (anyCompleted && completionCallback != null) {
+            completionCallback.accept(player);
         }
     }
 

@@ -52,7 +52,15 @@ public class ReachYLevelGoal implements PlayerGoal {
     }
 
     @Override
-    public String descriptionText() {
+    public String descriptionText(boolean shortFormat) {
+        if (shortFormat) {
+            if (direction == Direction.UP) {
+                return "Reach Y≥" + yLevel;
+            } else {
+                return "Reach Y≤" + yLevel;
+            }
+        }
+
         if (direction == Direction.UP) {
             return "Reach Y-level " + yLevel + " or higher";
         } else {
