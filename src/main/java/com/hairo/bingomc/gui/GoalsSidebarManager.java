@@ -68,6 +68,12 @@ public class GoalsSidebarManager {
         } else {
             pins.add(goalId);
         }
+
+        if (pins.size() > MAX_PINNED) {
+            String first = pins.iterator().next();
+            pins.remove(first);
+        }
+
         buildSidebar(player);
     }
 

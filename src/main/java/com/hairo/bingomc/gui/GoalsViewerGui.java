@@ -91,7 +91,9 @@ public final class GoalsViewerGui {
                     })
                     .addClickHandler((item, click) -> {
                         sidebarManager.togglePin(player, finalGoal.id());
-                        item.notifyWindows();
+                        for (Item goalItem : goalItems) {
+                            goalItem.notifyWindows();
+                        }
                     })
                     .build());
             } else {
@@ -112,7 +114,7 @@ public final class GoalsViewerGui {
 
                 goalItems.add(Item.simple(new ItemBuilder(icon)
                     .setName((done ? "<green>" : "<yellow>") + goal.descriptionText())
-                    
+                    .hideTooltip(DataComponentTypes.ATTRIBUTE_MODIFIERS, DataComponentTypes.TOOL)
                     .addLoreLines(lore.toArray(new String[0]))
                     .setAmount(stackAmount)));
             }

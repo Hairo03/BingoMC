@@ -8,13 +8,11 @@ import java.util.Map;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
-import java.time.Duration;
 import java.util.function.Consumer;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.title.Title;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
