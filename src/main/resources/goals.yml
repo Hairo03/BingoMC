@@ -1,10 +1,36 @@
 goals:
   # EASY (7)
+  - id: easy_reach_y_level_100
+    difficulty: easy
+    type: reach_y_level
+    level: 100
+    direction: UP
+    icon: minecraft:ladder
+    points: 25
+    enabled: true
+
+  - id: easy_obtain_logs_16
+    difficulty: easy
+    type: obtain_item_type
+    material_type: minecraft:logs
+    icon: minecraft:oak_log
+    amount: 16
+    points: 25
+    enabled: true
+
+  - id: easy_enter_village
+    difficulty: easy
+    type: enter_structure
+    structure: minecraft:village_plains
+    icon: minecraft:bell
+    points: 25
+    enabled: true
+
   - id: easy_collect_oak_log_16
     difficulty: easy
     type: obtain_item
-    material: OAK_LOG
-    icon: OAK_LOG
+    material: minecraft:oak_log
+    icon: minecraft:oak_log
     amount: 16
     points: 25
     enabled: true
@@ -12,8 +38,8 @@ goals:
   - id: easy_collect_cobblestone_32
     difficulty: easy
     type: obtain_item
-    material: COBBLESTONE
-    icon: COBBLESTONE
+    material: minecraft:cobblestone
+    icon: minecraft:cobblestone
     amount: 32
     points: 25
     enabled: true
@@ -21,8 +47,8 @@ goals:
   - id: easy_craft_crafting_table
     difficulty: easy
     type: craft_item
-    material: CRAFTING_TABLE
-    icon: CRAFTING_TABLE
+    material: minecraft:crafting_table
+    icon: minecraft:crafting_table
     amount: 1
     points: 25
     enabled: true
@@ -30,8 +56,8 @@ goals:
   - id: easy_craft_bread
     difficulty: easy
     type: craft_item
-    material: BREAD
-    icon: BREAD
+    material: minecraft:bread
+    icon: minecraft:bread
     amount: 1
     points: 25
     enabled: true
@@ -39,8 +65,8 @@ goals:
   - id: easy_consume_apple
     difficulty: easy
     type: consume_item
-    material: APPLE
-    icon: APPLE
+    material: minecraft:apple
+    icon: minecraft:apple
     amount: 1
     points: 25
     enabled: true
@@ -48,8 +74,8 @@ goals:
   - id: easy_kill_cow_2
     difficulty: easy
     type: kill_entity
-    entity_type: COW
-    icon: LEATHER
+    entity_type: minecraft:cow
+    icon: minecraft:leather
     amount: 2
     points: 25
     enabled: true
@@ -57,8 +83,8 @@ goals:
   - id: easy_sweet_dreams_advancement
     difficulty: easy
     type: unlock_advancement
-    advancement_key: adventure/sleep_in_bed
-    icon: WHITE_BED
+    advancement_key: minecraft:adventure/sleep_in_bed
+    icon: minecraft:white_bed
     points: 25
     enabled: true
 
@@ -67,8 +93,8 @@ goals:
   - id: medium_collect_iron_ingot_24
     difficulty: medium
     type: obtain_item
-    material: IRON_INGOT
-    icon: IRON_INGOT
+    material: minecraft:iron_ingot
+    icon: minecraft:iron_ingot
     amount: 24
     points: 50
     enabled: true
@@ -76,8 +102,8 @@ goals:
   - id: medium_collect_lapis_lazuli_16
     difficulty: medium
     type: obtain_item
-    material: LAPIS_LAZULI
-    icon: LAPIS_LAZULI
+    material: minecraft:lapis_lazuli
+    icon: minecraft:lapis_lazuli
     amount: 16
     points: 50
     enabled: true
@@ -85,8 +111,8 @@ goals:
   - id: medium_craft_iron_pickaxe
     difficulty: medium
     type: craft_item
-    material: IRON_PICKAXE
-    icon: IRON_PICKAXE
+    material: minecraft:iron_pickaxe
+    icon: minecraft:iron_pickaxe
     amount: 1
     points: 50
     enabled: true
@@ -94,8 +120,8 @@ goals:
   - id: medium_craft_shield
     difficulty: medium
     type: craft_item
-    material: SHIELD
-    icon: SHIELD
+    material: minecraft:shield
+    icon: minecraft:shield
     amount: 1
     points: 50
     enabled: true
@@ -103,8 +129,8 @@ goals:
   - id: medium_consume_cooked_beef_3
     difficulty: medium
     type: consume_item
-    material: COOKED_BEEF
-    icon: COOKED_BEEF
+    material: minecraft:cooked_beef
+    icon: minecraft:cooked_beef
     amount: 3
     points: 50
     enabled: true
@@ -112,8 +138,8 @@ goals:
   - id: medium_kill_skeleton_5
     difficulty: medium
     type: kill_entity
-    entity_type: SKELETON
-    icon: BONE
+    entity_type: minecraft:skeleton
+    icon: minecraft:bone
     amount: 5
     points: 50
     enabled: true
@@ -121,8 +147,8 @@ goals:
   - id: medium_mount_horse
     difficulty: medium
     type: use_vehicle
-    entity_type: HORSE
-    icon: SADDLE
+    entity_type: minecraft:horse
+    icon: minecraft:saddle
     points: 50
     enabled: true
 
@@ -131,8 +157,8 @@ goals:
   - id: hard_craft_diamond_pickaxe
     difficulty: hard
     type: craft_item
-    material: DIAMOND_PICKAXE
-    icon: DIAMOND_PICKAXE
+    material: minecraft:diamond_pickaxe
+    icon: minecraft:diamond_pickaxe
     amount: 1
     points: 100
     enabled: true
@@ -140,8 +166,8 @@ goals:
   - id: hard_collect_ender_pearl_8
     difficulty: hard
     type: obtain_item
-    material: ENDER_PEARL
-    icon: ENDER_PEARL
+    material: minecraft:ender_pearl
+    icon: minecraft:ender_pearl
     amount: 8
     points: 100
     enabled: true
@@ -149,8 +175,8 @@ goals:
   - id: hard_collect_blaze_rod_8
     difficulty: hard
     type: obtain_item
-    material: BLAZE_ROD
-    icon: BLAZE_ROD
+    material: minecraft:blaze_rod
+    icon: minecraft:blaze_rod
     amount: 8
     points: 100
     enabled: true
@@ -158,8 +184,8 @@ goals:
   - id: hard_craft_enchanting_table
     difficulty: hard
     type: craft_item
-    material: ENCHANTING_TABLE
-    icon: ENCHANTING_TABLE
+    material: minecraft:enchanting_table
+    icon: minecraft:enchanting_table
     amount: 1
     points: 100
     enabled: true
@@ -167,8 +193,8 @@ goals:
   - id: hard_consume_golden_apple
     difficulty: hard
     type: consume_item
-    material: GOLDEN_APPLE
-    icon: GOLDEN_APPLE
+    material: minecraft:golden_apple
+    icon: minecraft:golden_apple
     amount: 1
     points: 100
     enabled: true
@@ -176,8 +202,8 @@ goals:
   - id: hard_enter_nether
     difficulty: hard
     type: change_dimension
-    dimension: NETHER
-    icon: OBSIDIAN
+    dimension: minecraft:the_nether
+    icon: minecraft:obsidian
     points: 100
     enabled: true
 
@@ -185,7 +211,7 @@ goals:
     difficulty: hard
     type: unlock_advancement
     advancement_key: minecraft:nether/return_to_sender
-    icon: FIRE_CHARGE
+    icon: minecraft:fire_charge
     points: 100
     enabled: true
 
@@ -194,8 +220,8 @@ goals:
   - id: impossible_collect_netherite_ingot_1
     difficulty: impossible
     type: obtain_item
-    material: NETHERITE_INGOT
-    icon: NETHERITE_INGOT
+    material: minecraft:netherite_ingot
+    icon: minecraft:netherite_ingot
     amount: 1
     points: 200
     enabled: true
@@ -203,8 +229,8 @@ goals:
   - id: impossible_kill_warden
     difficulty: impossible
     type: kill_entity
-    entity_type: WARDEN
-    icon: SCULK
+    entity_type: minecraft:warden
+    icon: minecraft:sculk
     amount: 1
     points: 200
     enabled: true
@@ -212,8 +238,8 @@ goals:
   - id: impossible_collect_totem_1
     difficulty: impossible
     type: obtain_item
-    material: TOTEM_OF_UNDYING
-    icon: TOTEM_OF_UNDYING
+    material: minecraft:totem_of_undying
+    icon: minecraft:totem_of_undying
     amount: 1
     points: 200
     enabled: true
@@ -221,8 +247,8 @@ goals:
   - id: impossible_craft_recovery_compass
     difficulty: impossible
     type: craft_item
-    material: RECOVERY_COMPASS
-    icon: RECOVERY_COMPASS
+    material: minecraft:recovery_compass
+    icon: minecraft:recovery_compass
     amount: 1
     points: 200
     enabled: true
@@ -230,8 +256,8 @@ goals:
   - id: impossible_consume_enchanted_golden_apple
     difficulty: impossible
     type: consume_item
-    material: ENCHANTED_GOLDEN_APPLE
-    icon: ENCHANTED_GOLDEN_APPLE
+    material: minecraft:enchanted_golden_apple
+    icon: minecraft:enchanted_golden_apple
     amount: 1
     points: 200
     enabled: true
@@ -239,8 +265,8 @@ goals:
   - id: impossible_kill_wither
     difficulty: impossible
     type: kill_entity
-    entity_type: WITHER
-    icon: NETHER_STAR
+    entity_type: minecraft:wither
+    icon: minecraft:nether_star
     amount: 1
     points: 200
     enabled: true
@@ -248,8 +274,8 @@ goals:
   - id: impossible_kill_ender_dragon
     difficulty: impossible
     type: kill_entity
-    entity_type: ENDER_DRAGON
-    icon: DRAGON_BREATH
+    entity_type: minecraft:ender_dragon
+    icon: minecraft:dragon_breath
     amount: 1
     points: 200
     enabled: true

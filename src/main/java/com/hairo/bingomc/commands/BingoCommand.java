@@ -33,7 +33,9 @@ public class BingoCommand {
                                         .executes(this::executeGoalsValidate))
                                 .then(Commands.literal("reload")
                                         .requires(sender -> sender.getSender().hasPermission("bingomc.goals.reload"))
-                                        .executes(this::executeGoalsReload)));
+                                        .executes(this::executeGoalsReload)))
+                .then(Commands.literal("export").requires(sender -> sender.getSender().hasPermission("bingomc.export"))
+                        .executes(this::executeExport));
         commands.register(root.build(), "Main Bingo command", List.of());
     }
 
@@ -69,6 +71,11 @@ public class BingoCommand {
 
     private int executeGoalsReload(CommandContext<CommandSourceStack> context) {
         commandHandler.handleGoalsReloadCommand(context.getSource().getSender());
+        return 1;
+    }
+
+    private int executeExport(CommandContext<CommandSourceStack> context) {
+        commandHandler.handleExportCommand(context.getSource().getSender());
         return 1;
     }
 }
