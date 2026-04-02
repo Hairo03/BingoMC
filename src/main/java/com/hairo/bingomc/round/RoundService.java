@@ -8,6 +8,7 @@ import com.hairo.bingomc.worlds.PlayerWorldSet;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -196,7 +197,7 @@ public class RoundService {
             PlayerWorldSet worldSet = createdWorldSets.get(participantId);
             World playerWorld = Bukkit.getWorld(worldSet.overworldName());
             try {
-                player.teleport(playerWorld.getSpawnLocation());
+                player.teleport(centeredSpawn(playerWorld));
             } catch (Exception e) {
                 plugin.getLogger().severe("Failed to teleport player " + player.getName() + ": " + e.getMessage());
                 worldService.cleanupWorldSets(createdWorldSets.values());
@@ -272,6 +273,13 @@ public class RoundService {
 
     public long getRoundRemainingSeconds() {
         return timer != null ? timer.getRemainingSeconds() : 0L;
+    }
+
+    private static Location centeredSpawn(World world) {
+        Location spawn = world.getSpawnLocation();
+        spawn.setX(Math.floor(spawn.getX()) + 0.5);
+        spawn.setZ(Math.floor(spawn.getZ()) + 0.5);
+        return spawn;
     }
 
     private void beginPreparation(long roundDurationSeconds) {
