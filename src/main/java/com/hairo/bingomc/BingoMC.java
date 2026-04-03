@@ -3,7 +3,9 @@ package com.hairo.bingomc;
 import com.hairo.bingomc.goals.core.GoalManager;
 import com.hairo.bingomc.goals.config.GoalConfigService;
 import com.hairo.bingomc.goals.config.GoalOptionCatalog;
+import com.hairo.bingomc.goals.config.GoalRandomizerService;
 import com.hairo.bingomc.goals.config.GoalsService;
+import com.hairo.bingomc.goals.config.RandomGoalPoolService;
 import com.hairo.bingomc.commands.BingoCommandHandler;
 import com.hairo.bingomc.gui.GoalsAdminGui;
 import com.hairo.bingomc.gui.GoalsSidebar;
@@ -51,7 +53,9 @@ public class BingoMC extends JavaPlugin implements Listener {
         goalsSidebar = new GoalsSidebar(this, goalManager);
         goalManager.setCompletionCallback(goalsSidebar::onGoalCompleted);
         goalsViewerGui = new GoalsViewerGui(this, goalsSidebar);
-        goalsAdminGui = new GoalsAdminGui(this);
+        RandomGoalPoolService poolService = new RandomGoalPoolService(this, goalConfigService);
+        GoalRandomizerService randomizerService = new GoalRandomizerService(this, poolService, goalsService);
+        goalsAdminGui = new GoalsAdminGui(this, randomizerService);
         newGameGui = new NewGameGui();
         InvUI.getInstance().setPlugin(this);
 
@@ -103,6 +107,7 @@ public class BingoMC extends JavaPlugin implements Listener {
             return;
         }
 
+        poolService.loadPool(); // validate random goal pool at startup; logs warnings, never aborts
         roundService.startTicker();
     }
 
