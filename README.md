@@ -1,143 +1,126 @@
 # BingoMC
 
-BingoMC is a Paper plugin that runs a competitive Bingo-style gamemode with per-player worlds, configurable goals, scoring, and in-game UI tools.
+A competitive Bingo gamemode plugin for Paper Minecraft servers.
+
+Players compete to complete randomized goals across isolated per-player worlds. Each player gets their own Overworld, Nether, and End — all generated from the same seed — so everyone starts on equal footing. Goals are completed for points, and the highest score at the end of the round wins.
 
 ## Features
 
-- **Per-player World Sets**: Creates personal overworld/nether/end worlds for each player per round using Multiverse
-- **Inventory Isolation**: Isolates players using Multiverse-Inventories world groups
-- **Portal Routing**: Links each player's own dimensions via Multiverse-NetherPortals
-- **Config-driven Goals**: Loads and validates goals from `goals.yml`
-- **Scoring & Ranking**: Tracks points and broadcasts final rankings at round end
-- **Round Timer**: Displays a live boss bar timer and ends rounds automatically
-- **Round Setup UI**: Start flow includes GUI-based seed and time-limit selection
-- **Goals UIs**: Includes player viewer and admin goals interfaces via InvUI
+- Per-player world sets (Overworld + Nether + End) provisioned each round via Multiverse-Core
+- Inventory isolation per world group via Multiverse-Inventories
+- Nether and End portals route to each player's own dimension via Multiverse-NetherPortals
+- 10 configurable goal types (see [Configuration](#configuration))
+- 28 default goals across 4 difficulty tiers: Easy (25 pts), Medium (50 pts), Hard (100 pts), Impossible (200 pts)
+- Preparation phase with movement blocking before the round timer starts
+- Boss bar countdown timer during the round
+- Live goal sidebar with pinnable goals and an in-game goal viewer GUI
+- Final score rankings broadcast at round end
 
 ## Requirements
 
-- **Java**: 21 or higher
-- **Minecraft Server**: Paper 1.21.4 or compatible version
-- **Server Plugins**:
-   - Multiverse-Core
-   - Multiverse-NetherPortals
-   - Multiverse-Inventories
+- Java 21+
+- Paper 1.21.x (built against 1.21.11)
+- [Multiverse-Core](https://dev.bukkit.org/projects/multiverse-core) 5.5.3
+- [Multiverse-NetherPortals](https://dev.bukkit.org/projects/multiverse-netherportals) 5.0.4
+- [Multiverse-Inventories](https://dev.bukkit.org/projects/multiverse-inventories) 5.3.2
 
-## Setup & Installation
+## Installation
 
-### Building from Source
+**Build from source:**
 
 ```bash
 ./gradlew build
-```
-
-Windows:
-
-```bash
+# Windows:
 gradlew.bat build
 ```
 
-### Locate the JAR
+Output: `build/libs/BingoMC-1.0.0-SNAPSHOT-dev.jar`
 
-```text
-build/libs/BingoMC-1.0.0-SNAPSHOT.jar
+**Server setup:**
+
+1. Install Multiverse-Core, Multiverse-NetherPortals, and Multiverse-Inventories on your server.
+2. Copy the BingoMC JAR into `plugins/`.
+3. Start the server once to generate `plugins/BingoMC/config.yml` and `plugins/BingoMC/goals.yml`.
+4. Edit `goals.yml` as needed (the defaults are usable out of the box).
+5. Use `/bingo goals reload` to apply changes without restarting (only works when no round is active).
+
+## Configuration
+
+### `config.yml`
+
+```yaml
+preparation-countdown-seconds: 60
 ```
 
-### Install on Server
+The number of seconds players are frozen in place before the round timer starts.
 
-1. Install required plugins:
-   - Multiverse-Core
-   - Multiverse-NetherPortals
-   - Multiverse-Inventories
-2. Copy BingoMC jar into your server `plugins/` directory.
-3. Start the server once to generate plugin data files.
-4. Edit `plugins/BingoMC/goals.yml` as needed.
-5. Restart the server, or run `/bingo goals reload` when no round is active.
+### `goals.yml`
 
-### Requirements Before First Run
+Goals are defined as a list under the `goals` key. Common fields:
 
-- Ensure your server is running Paper 1.21.4-compatible builds
-- Ensure Multiverse dependencies are installed and loaded before BingoMC
-- Ensure the server can write to `plugins/BingoMC/`
+| Field | Description |
+|---|---|
+| `id` | Unique string identifier |
+| `type` | Goal type (see table below) |
+| `difficulty` | `easy`, `medium`, `hard`, or `impossible` — display only |
+| `points` | Integer score value for completing this goal |
+| `enabled` | `true` or `false` |
+| `icon` | Minecraft material namespaced key for the GUI icon (e.g. `minecraft:oak_log`) |
 
-## Commands
+**Goal types and their type-specific fields:**
 
-- `/bingo` - Show usage
-- `/bingo start` - Open round setup UI and start round (player only, op only)
-- `/bingo stop` - Stop active round (op only)
-- `/bingo goals` - Open player goals viewer UI
-- `/bingo goals admin` - Open goals admin UI (`bingomc.goals.admin`)
-- `/bingo goals validate` - Validate `goals.yml`
-- `/bingo goals reload` - Reload goals from disk (not allowed during active round)
+| Type | Required fields | Optional fields |
+|---|---|---|
+| `obtain_item` | `material` | `amount` (default: 1) |
+| `obtain_item_type` | `material_type` (item tag, e.g. `minecraft:logs`) | `amount` (default: 1) |
+| `consume_item` | `material` | `amount` (default: 1) |
+| `craft_item` | `material` | `amount` (default: 1) |
+| `kill_entity` | `entity_type` | `amount` (default: 1) |
+| `unlock_advancement` | `advancement_key` | — |
+| `change_dimension` | `dimension` (`minecraft:overworld` / `minecraft:the_nether` / `minecraft:the_end`) | — |
+| `enter_structure` | `structure` (namespaced key) | — |
+| `use_vehicle` | `entity_type` | — |
+| `reach_y_level` | `level` (integer), `direction` (`UP` or `DOWN`) | — |
 
-## Permissions
+Run `/bingo export` to generate `plugins/BingoMC/goal-options.csv` — a full list of valid values for `material`, `entity_type`, `advancement_key`, `material_type`, `structure`, and `dimension` fields.
 
-- `bingomc.goals.admin`
-  - Allows opening goals admin UI and goals management workflow
-  - Default: `op`
+The plugin will refuse to load if `goals.yml` contains validation errors. Use `/bingo goals validate` to check before reloading.
+
+## Commands & Permissions
+
+| Command | Permission | Default | Description |
+|---|---|---|---|
+| `/bingo` | — | everyone | Show usage |
+| `/bingo start` | `bingomc.start` | op | Open round setup GUI and start a round |
+| `/bingo stop` | `bingomc.stop` | op | Stop the active round |
+| `/bingo goals` | `bingomc.goals.user` | all players | Open the goals viewer GUI |
+| `/bingo goals admin` | `bingomc.goals.admin` | op | Open the goals admin GUI |
+| `/bingo goals validate` | `bingomc.goals.validate` | op | Validate `goals.yml` and report errors |
+| `/bingo goals reload` | `bingomc.goals.reload` | op | Reload goals from disk (blocked during active round) |
+| `/bingo export` | `bingomc.export` | op | Export valid goal option values to `goal-options.csv` |
 
 ## Round Flow
 
-1. Operator runs `/bingo start`.
-2. Start GUI collects seed and time limit.
-3. Plugin provisions personal world sets for all online players.
-4. Players are teleported to their own overworld.
-5. Timer starts and periodic/event goal evaluation runs.
-6. At timeout (or `/bingo stop`), players return to main world.
-7. Final score ranking is broadcast.
-8. Managed Bingo worlds are rotated and cleaned by world service lifecycle.
+1. Operator runs `/bingo start` to open the round setup GUI (seed and time limit selection).
+2. All online players are registered as participants.
+3. Per-player world sets are provisioned — each player gets a private Overworld, Nether, and End with the chosen seed.
+4. Players are teleported to their private Overworld spawn.
+5. Preparation phase begins: movement is blocked for the configured countdown.
+6. Round starts: goals are tracked via game events and periodic checks. Boss bar shows remaining time.
+7. Round ends when the timer expires or an operator runs `/bingo stop`.
+8. Players are teleported back to the main world.
+9. Final scores are ranked and broadcast to all players.
+10. Bingo worlds are marked for cleanup before the next round.
 
-Late joiners during an active round are not auto-enrolled and are told to wait for the next round.
-
-## Goals Configuration (`goals.yml`)
-
-Goals are loaded from `plugins/BingoMC/goals.yml`.
-
-Supported `type` values:
-
-- `craft_item`
-- `consume_item`
-- `use_vehicle`
-- `obtain_item`
-- `kill_entity`
-- `unlock_advancement`
-
-### Common Fields
-
-- `id` (unique string)
-- `type`
-- `points` (integer >= 1)
-- `enabled` (`true` or `false`)
-
-### Type-Specific Fields
-
-- `material` + optional `amount` for item-based goals
-- `entity_type` + optional `amount` for entity goals
-- `advancement_key` for advancement goals
-
-If `goals.yml` is invalid at startup, plugin startup is aborted.
-
-## TODO
-
-- Add more goal types for other playstyles, e.g. exploration, fishing, building, etc.
- - Redo default goals, and maybe allow even more goals per round.
-- Rejoining during an active round works, but the message is wrong.
-- Rejoining after round end doesn't work, you get put in your world instead of main world.
-- Leaving during preparation will cause issues, as you will keep your `applyPreparationState`
-- Add a configurable ready check before round start, so servers can choose whether all players must confirm they are ready.
-- Add a permission-based admin join bypass, allowing admins to be excluded from joining the round automatically unless they explicitly opt in.
-   - If admins didn't join, add ability to spectate, maybe with GUI
-   - When a player completes a goal, admin should see link to tp to said player on click
-- Add pause and resume functionality, allowing rounds to be temporarily halted and later continued without resetting progress or timer. - Support server restart.
-- Change rejoining text to fit longer games
-- Ability to change, add and delete goals in-game through admin GUI
-- Cross-platform (Geyser, VIA Versions)
+Players who join during an active round are told to wait for the next round.
 
 ## Dependencies
 
-| Dependency | Version | Purpose |
-|-----------|---------|---------|
-| Paper API | 1.21.4-R0.1-SNAPSHOT | Minecraft server API |
-| Multiverse-Core | 5.5.3 | Per-player world lifecycle |
-| Multiverse-NetherPortals | 5.0.4 | Per-player Nether/End portal routing |
-| Multiverse-Inventories | 5.3.2 | Per-player inventory isolation |
-| InvUI | 2.0.0-beta.1 | GUI framework (bundled in plugin jar) |
+| Dependency | Version | Bundled |
+|---|---|---|
+| Paper API | 1.21.11-R0.1-SNAPSHOT | No — provided by server |
+| Multiverse-Core | 5.5.3 | No — must be installed on server |
+| Multiverse-NetherPortals | 5.0.4 | No — must be installed on server |
+| Multiverse-Inventories | 5.3.2 | No — must be installed on server |
+| [InvUI](https://github.com/NichtStudioCode/InvUI) | 2.0.0-beta.1 | Yes |
+| [scoreboard-library](https://github.com/MegavexNetwork/scoreboard-library) | 2.7.1 | Yes |
