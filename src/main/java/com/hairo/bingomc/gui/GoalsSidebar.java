@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public class GoalsSidebarManager {
+public class GoalsSidebar {
 
     private static final int MAX_PINNED = 5;
     private static final int MAX_TOTAL_GOALS = 10;
@@ -39,15 +39,15 @@ public class GoalsSidebarManager {
     private final Map<UUID, BukkitTask> playerTasks = new HashMap<>();
     private final Map<UUID, LinkedHashSet<String>> pinnedGoalIds = new HashMap<>();
 
-    public GoalsSidebarManager(JavaPlugin plugin, GoalManager goalManager) {
+    public GoalsSidebar(JavaPlugin plugin, GoalManager goalManager) {
         this.plugin = plugin;
         this.goalManager = goalManager;
         ScoreboardLibrary lib;
         try {
             lib = ScoreboardLibrary.loadScoreboardLibrary(plugin);
-        } catch (net.megavex.scoreboardlibrary.api.exception.NoPacketAdapterAvailableException e) {
+        } catch (Exception e) {
             lib = new net.megavex.scoreboardlibrary.api.noop.NoopScoreboardLibrary();
-            plugin.getLogger().warning("scoreboard-library: no packet adapter available, sidebar will not be visible!");
+            plugin.getLogger().warning("scoreboard-library unavailable (" + e.getMessage() + "), sidebar will not be visible!");
         }
         this.scoreboardLibrary = lib;
     }
@@ -78,7 +78,7 @@ public class GoalsSidebarManager {
     }
 
     public void onGoalCompleted(Player player) {
-        if (playerSidebars.containsKey(player.getUniqueId())) {
+        if (player.isOnline() && playerSidebars.containsKey(player.getUniqueId())) {
             buildSidebar(player);
         }
     }

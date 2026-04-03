@@ -6,7 +6,7 @@ import com.hairo.bingomc.goals.config.GoalOptionCatalog;
 import com.hairo.bingomc.goals.config.GoalsService;
 import com.hairo.bingomc.commands.BingoCommandHandler;
 import com.hairo.bingomc.gui.GoalsAdminGui;
-import com.hairo.bingomc.gui.GoalsSidebarManager;
+import com.hairo.bingomc.gui.GoalsSidebar;
 import com.hairo.bingomc.gui.GoalsViewerGui;
 import com.hairo.bingomc.gui.NewGameGui;
 import com.hairo.bingomc.listeners.GoalEventListener;
@@ -35,7 +35,7 @@ public class BingoMC extends JavaPlugin implements Listener {
 
     private final GoalManager goalManager = new GoalManager();
     private final GoalOptionCatalog goalOptionCatalog = new GoalOptionCatalog();
-    private GoalsSidebarManager sidebarManager;
+    private GoalsSidebar goalsSidebar;
     private GoalsViewerGui goalsViewerGui;
     private GoalsAdminGui goalsAdminGui;
     private NewGameGui newGameGui;
@@ -48,9 +48,9 @@ public class BingoMC extends JavaPlugin implements Listener {
         saveDefaultConfig();
         GoalConfigService goalConfigService = new GoalConfigService(this);
         goalsService = new GoalsService(this, goalConfigService, goalManager);
-        sidebarManager = new GoalsSidebarManager(this, goalManager);
-        goalManager.setCompletionCallback(sidebarManager::onGoalCompleted);
-        goalsViewerGui = new GoalsViewerGui(this, sidebarManager);
+        goalsSidebar = new GoalsSidebar(this, goalManager);
+        goalManager.setCompletionCallback(goalsSidebar::onGoalCompleted);
+        goalsViewerGui = new GoalsViewerGui(this, goalsSidebar);
         goalsAdminGui = new GoalsAdminGui(this);
         newGameGui = new NewGameGui();
         InvUI.getInstance().setPlugin(this);
@@ -74,8 +74,7 @@ public class BingoMC extends JavaPlugin implements Listener {
             this::prefixed
         );
         roundService.initialize();
-        roundService.setSidebarManager(sidebarManager);
-        roundService.setGoalsViewerGui(goalsViewerGui);
+        roundService.setGuiComponents(this, goalsSidebar, goalsViewerGui);
 
         commandHandler = new BingoCommandHandler(
             this,
@@ -111,9 +110,6 @@ public class BingoMC extends JavaPlugin implements Listener {
     public void onDisable() {
         if (roundService != null) {
             roundService.onDisable();
-        }
-        if (sidebarManager != null) {
-            sidebarManager.close();
         }
         getLogger().info("BingoMC has been disabled!");
     }

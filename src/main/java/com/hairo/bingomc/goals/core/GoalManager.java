@@ -24,6 +24,7 @@ public class GoalManager {
     private final Map<String, Integer> pointsByGoalId = new HashMap<>();
     private final Map<UUID, Set<String>> completedByPlayer = new HashMap<>();
     private Consumer<Player> completionCallback;
+    private final Map<UUID, Map<String, Integer>> lastKnownProgress = new HashMap<>();
 
     public void setCompletionCallback(Consumer<Player> callback) {
         this.completionCallback = callback;
@@ -66,6 +67,7 @@ public class GoalManager {
     public void evaluate(Player player, GoalTrigger trigger) {
         Set<String> completed = completedByPlayer.computeIfAbsent(player.getUniqueId(), ignored -> new HashSet<>());
         boolean anyCompleted = false;
+        List<Component> progressComponents = new ArrayList<>();
 
         for (PlayerGoal goal : goals) {
             if (!goal.triggers().contains(trigger)) {
@@ -82,26 +84,38 @@ public class GoalManager {
                 anyCompleted = true;
                 int points = pointsByGoalId.getOrDefault(id, 1);
                 Bukkit.broadcast(
-                    Component.text()
-                        .append(Component.text("[Bingo] ", NamedTextColor.GOLD, TextDecoration.BOLD))
-                        .append(Component.text(player.getName() + " completed goal: ", NamedTextColor.GREEN))
-                        .append(Component.text(goal.descriptionText(), NamedTextColor.WHITE, TextDecoration.BOLD))
-                        .append(Component.text(" (", NamedTextColor.DARK_GRAY, TextDecoration.BOLD))
-                        .append(Component.text("+" + points + " pts", NamedTextColor.AQUA, TextDecoration.BOLD))
-                        .append(Component.text(")", NamedTextColor.DARK_GRAY, TextDecoration.BOLD))
-                        .build()
-                );
+                        Component.text()
+                                .append(Component.text("[Bingo] ", NamedTextColor.GOLD, TextDecoration.BOLD))
+                                .append(Component.text(player.getName() + " completed goal: ", NamedTextColor.GREEN))
+                                .append(Component.text(goal.descriptionText(), NamedTextColor.WHITE,
+                                        TextDecoration.BOLD))
+                                .append(Component.text(" (", NamedTextColor.DARK_GRAY, TextDecoration.BOLD))
+                                .append(Component.text("+" + points + " pts", NamedTextColor.AQUA, TextDecoration.BOLD))
+                                .append(Component.text(")", NamedTextColor.DARK_GRAY, TextDecoration.BOLD))
+                                .build());
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
             } else if (trigger != GoalTrigger.PERIODIC && goal instanceof AmountBasedGoal amountGoal) {
                 int current = amountGoal.currentProgress(player);
-                if (current > 0) {
-                    player.sendActionBar(
-                        Component.text(goal.descriptionText() + "  ", NamedTextColor.YELLOW)
-                            .append(Component.text(current + "/" + amountGoal.amount(),
-                                NamedTextColor.WHITE, TextDecoration.BOLD))
-                    );
+                Map<String, Integer> playerProgress = lastKnownProgress
+                        .computeIfAbsent(player.getUniqueId(), ignored -> new HashMap<>());
+                int last = playerProgress.getOrDefault(id, 0);
+                playerProgress.put(id, current);
+                if (current > last) {
+                    progressComponents.add(
+                            Component.text(goal.descriptionText() + "  ", NamedTextColor.YELLOW)
+                                    .append(Component.text(current + "/" + amountGoal.amount(),
+                                            NamedTextColor.WHITE, TextDecoration.BOLD)));
                 }
             }
+        }
+
+        if (!progressComponents.isEmpty()) {
+            Component bar = progressComponents.get(0);
+            for (int i = 1; i < progressComponents.size(); i++) {
+                bar = bar.append(Component.text("  |  ", NamedTextColor.GRAY))
+                        .append(progressComponents.get(i));
+            }
+            player.sendActionBar(bar);
         }
 
         if (anyCompleted && completionCallback != null) {
@@ -131,15 +145,19 @@ public class GoalManager {
                 }
             }
         } catch (Exception e) {
-            Bukkit.getLogger().severe("Failed to initialize goals for player " + (player != null ? player.getName() : "unknown") + ": " + e.getMessage());
-            // Attempt to rollback/cleanup any partial state
-            resetAllProgress();
+            Bukkit.getLogger().severe("Failed to initialize goals for player "
+                    + (player != null ? player.getName() : "unknown") + ": " + e.getMessage());
+            completedByPlayer.remove(player.getUniqueId());
+            for (RoundAwareGoal goal : applied) {
+                goal.onRoundReset();
+            }
             throw e;
         }
     }
 
     public void resetAllProgress() {
         completedByPlayer.clear();
+        lastKnownProgress.clear();
         for (PlayerGoal goal : goals) {
             if (goal instanceof RoundAwareGoal roundAwareGoal) {
                 roundAwareGoal.onRoundReset();

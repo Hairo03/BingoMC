@@ -1,5 +1,7 @@
 package com.hairo.bingomc.round;
 
+import com.hairo.bingomc.gui.GoalsSidebar;
+import com.hairo.bingomc.gui.GoalsViewerGui;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -7,20 +9,27 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class RoundDisplay {
+public class RoundPresenter {
 
     private final Function<Component, Component> prefixer;
     private final BossBar timerBossBar;
     private final RoundParticipants participants;
 
-    public RoundDisplay(Function<Component, Component> prefixer, RoundParticipants participants) {
+    private JavaPlugin plugin;
+    private GoalsSidebar sidebar;
+    private GoalsViewerGui viewer;
+
+    public RoundPresenter(Function<Component, Component> prefixer, RoundParticipants participants) {
         this.prefixer = prefixer;
         this.participants = participants;
         this.timerBossBar = BossBar.bossBar(
@@ -29,6 +38,61 @@ public class RoundDisplay {
                 BossBar.Color.BLUE,
                 BossBar.Overlay.PROGRESS);
     }
+
+    public void setGuiComponents(JavaPlugin plugin, GoalsSidebar sidebar, GoalsViewerGui viewer) {
+        this.plugin = plugin;
+        this.sidebar = sidebar;
+        this.viewer = viewer;
+    }
+
+    // --- Round lifecycle GUI methods ---
+
+    public void onRoundStarted(Collection<UUID> participantIds) {
+        if (sidebar == null) return;
+        for (UUID id : participantIds) {
+            Player player = Bukkit.getPlayer(id);
+            if (player == null || !player.isOnline()) continue;
+            sidebar.onPlayerRoundStart(player);
+        }
+        if (viewer != null) {
+            List<UUID> copy = new ArrayList<>(participantIds);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                for (UUID id : copy) {
+                    Player player = Bukkit.getPlayer(id);
+                    if (player != null && player.isOnline()) {
+                        viewer.open(player);
+                    }
+                }
+            }, 20L);
+        }
+    }
+
+    public void onRoundConcluded(Collection<UUID> participantIds) {
+        hideBossBar();
+
+        if (sidebar == null) return;
+        sidebar.clearAll();
+        if (viewer != null) {
+            List<UUID> copy = new ArrayList<>(participantIds);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                for (UUID id : copy) {
+                    Player player = Bukkit.getPlayer(id);
+                    if (player != null && player.isOnline()) {
+                        viewer.openSummary(player);
+                    }
+                }
+            }, 20L);
+        }
+    }
+
+    public void shutdown() {
+        hideBossBar();
+
+        if (sidebar == null) return;
+        sidebar.close();
+    }
+
+    // --- Ambient display ---
 
     public void showStartingTitle() {
         Title startingTitle = Title.title(

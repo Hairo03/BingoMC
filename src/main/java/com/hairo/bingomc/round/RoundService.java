@@ -3,7 +3,7 @@ package com.hairo.bingomc.round;
 import com.hairo.bingomc.events.TimerExpiredEvent;
 import com.hairo.bingomc.goals.core.GoalManager;
 import com.hairo.bingomc.goals.util.Timer;
-import com.hairo.bingomc.gui.GoalsSidebarManager;
+import com.hairo.bingomc.gui.GoalsSidebar;
 import com.hairo.bingomc.gui.GoalsViewerGui;
 import com.hairo.bingomc.worlds.BingoWorldService;
 import com.hairo.bingomc.worlds.PlayerWorldSet;
@@ -31,7 +31,7 @@ public class RoundService {
     private final long preparationCountdownSeconds;
 
     private final RoundParticipants participants;
-    private final RoundDisplay display;
+    private final RoundPresenter presenter;
     private final RoundTaskTicker taskTicker;
 
     private Timer timer;
@@ -39,8 +39,6 @@ public class RoundService {
     private boolean gamePreparing = false;
     private long pendingRoundDurationSeconds;
 
-    private GoalsSidebarManager sidebarManager;
-    private GoalsViewerGui goalsViewerGui;
 
     public RoundService(
         JavaPlugin plugin,
@@ -59,16 +57,12 @@ public class RoundService {
         this.preparationCountdownSeconds = preparationCountdownSeconds;
 
         this.participants = new RoundParticipants();
-        this.display = new RoundDisplay(prefixer, participants);
-        this.taskTicker = new RoundTaskTicker(plugin, goalManager, display, participants);
+        this.presenter = new RoundPresenter(prefixer, participants);
+        this.taskTicker = new RoundTaskTicker(plugin, goalManager, presenter, participants);
     }
 
-    public void setSidebarManager(GoalsSidebarManager sidebarManager) {
-        this.sidebarManager = sidebarManager;
-    }
-
-    public void setGoalsViewerGui(GoalsViewerGui goalsViewerGui) {
-        this.goalsViewerGui = goalsViewerGui;
+    public void setGuiComponents(JavaPlugin plugin, GoalsSidebar sidebar, GoalsViewerGui viewer) {
+        presenter.setGuiComponents(plugin, sidebar, viewer);
     }
 
     public void initialize() {
@@ -114,13 +108,13 @@ public class RoundService {
                     }
                 }
             }
-            display.broadcastMessage("Bingo round ended due to server shutdown.", NamedTextColor.YELLOW);
+            presenter.broadcastMessage("Bingo round ended due to server shutdown.", NamedTextColor.YELLOW);
             gameRunning = false;
         }
 
         // Cleanup worlds and UI
         worldService.cleanupManagedBingoWorldsOnShutdown(mainWorldName);
-        display.hideBossBar();
+        presenter.shutdown();
 
         // Clear participant list and related state
         participants.clear();
@@ -128,7 +122,7 @@ public class RoundService {
 
     public void onPlayerJoin(Player player) {
         if (gameRunning) {
-            player.sendMessage(display.getPrefixedString("A round is currently running. You can join in the next round.", NamedTextColor.YELLOW));
+            player.sendMessage(presenter.getPrefixedString("A round is currently running. You can join in the next round.", NamedTextColor.YELLOW));
         }
     }
 
@@ -222,27 +216,10 @@ public class RoundService {
         }
 
         // Show title and broadcast after teleportation, before scheduling tasks
-        display.broadcastPreparationStart(preparationCountdownSeconds);
+        presenter.broadcastPreparationStart(preparationCountdownSeconds);
 
         // Initialize sidebar and open goals GUI so players can plan/pin during preparation
-        for (UUID participantId : participants.getParticipants()) {
-            Player player = Bukkit.getPlayer(participantId);
-            if (player == null || !player.isOnline()) continue;
-            if (sidebarManager != null) {
-                sidebarManager.onPlayerRoundStart(player);
-            }
-        }
-        if (goalsViewerGui != null) {
-            final List<UUID> participantsCopy = new ArrayList<>(participants.getParticipants());
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                for (UUID participantId : participantsCopy) {
-                    Player player = Bukkit.getPlayer(participantId);
-                    if (player != null && player.isOnline()) {
-                        goalsViewerGui.open(player);
-                    }
-                }
-            }, 20L);
-        }
+        presenter.onRoundStarted(participants.getParticipants());
 
         beginPreparation(roundDurationSeconds);
         return true;
@@ -281,11 +258,11 @@ public class RoundService {
     }
 
     public void showStartingTitle() {
-        display.showStartingTitle();
+        presenter.showStartingTitle();
     }
 
     public void clearStartingTitle() {
-        display.clearStartingTitle();
+        presenter.clearStartingTitle();
     }
 
     public boolean isGameRunning() {
@@ -327,7 +304,7 @@ public class RoundService {
         gamePreparing = false;
         participants.applyPreparationState(false);
 
-        display.showGoTitle();
+        presenter.showGoTitle();
 
         timer.reset();
         timer.setLimitSeconds(pendingRoundDurationSeconds);
@@ -337,16 +314,14 @@ public class RoundService {
         taskTicker.startGameTicker(timer);
         gameRunning = true;
 
-        display.broadcastRoundStart(pendingRoundDurationSeconds);
+        presenter.broadcastRoundStart(pendingRoundDurationSeconds);
     }
 
     private void concludeRound(String broadcastMessage, String logMessage) {
         gameRunning = false;
 
-        if (sidebarManager != null) {
-            sidebarManager.clearAll();
-        }
-
+        presenter.onRoundConcluded(participants.getParticipants());
+        
         World mainWorld = Bukkit.getWorld(mainWorldName);
         if (mainWorld != null) {
             for (UUID playerId : participants.getParticipants()) {
@@ -357,33 +332,19 @@ public class RoundService {
             }
         }
 
-        display.broadcastMessage(broadcastMessage, NamedTextColor.YELLOW);
+        presenter.broadcastMessage(broadcastMessage, NamedTextColor.YELLOW);
         plugin.getLogger().info(logMessage);
 
         List<UUID> ranking = new ArrayList<>(participants.getParticipants());
         ranking.sort(Comparator.comparingInt((UUID id) -> goalManager.getPoints(id)).reversed());
 
-        List<RoundDisplay.RankEntry> entries = ranking.stream()
+        List<RoundPresenter.RankEntry> entries = ranking.stream()
             .map(id -> {
                 String name = Bukkit.getOfflinePlayer(id).getName();
-                return new RoundDisplay.RankEntry(name != null ? name : id.toString(), goalManager.getPoints(id));
+                return new RoundPresenter.RankEntry(name != null ? name : id.toString(), goalManager.getPoints(id));
             })
             .toList();
-        display.broadcastRanking(entries);
-        display.hideBossBar();
-
-        // Clear sidebars and show round summary GUI
-        if (goalsViewerGui != null) {
-            final List<UUID> participantsCopy = new ArrayList<>(participants.getParticipants());
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                for (UUID participantId : participantsCopy) {
-                    Player player = Bukkit.getPlayer(participantId);
-                    if (player != null && player.isOnline()) {
-                        goalsViewerGui.openSummary(player);
-                    }
-                }
-            }, 20L);
-        }
+        presenter.broadcastRanking(entries);
 
         // We mark worlds for deletion, but don't immediately delete them.
         // To allow players to teleport out and provide admins a chance to investigate or view worlds after round conclusion if needed.

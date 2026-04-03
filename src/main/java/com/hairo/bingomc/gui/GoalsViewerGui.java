@@ -22,11 +22,11 @@ import xyz.xenondevs.invui.window.Window;
 
 public final class GoalsViewerGui {
     private final BingoMC plugin;
-    private final GoalsSidebarManager sidebarManager;
+    private final GoalsSidebar goalsSidebar;
 
-    public GoalsViewerGui(BingoMC plugin, GoalsSidebarManager sidebarManager) {
+    public GoalsViewerGui(BingoMC plugin, GoalsSidebar goalsSidebar) {
         this.plugin = plugin;
-        this.sidebarManager = sidebarManager;
+        this.goalsSidebar = goalsSidebar;
     }
 
     public void open(Player player) {
@@ -69,7 +69,7 @@ public final class GoalsViewerGui {
 
                 goalItems.add(Item.builder()
                     .setItemProvider(uuid -> {
-                        boolean pinned = sidebarManager.isPinned(playerId, finalGoal.id());
+                        boolean pinned = goalsSidebar.isPinned(playerId, finalGoal.id());
                         List<String> lore = new ArrayList<>();
                         if (amountGoal != null) {
                             int current = amountGoal.currentProgress(player);
@@ -90,7 +90,7 @@ public final class GoalsViewerGui {
                             .setAmount(stackAmount);
                     })
                     .addClickHandler((item, click) -> {
-                        sidebarManager.togglePin(player, finalGoal.id());
+                        goalsSidebar.togglePin(player, finalGoal.id());
                         for (Item goalItem : goalItems) {
                             goalItem.notifyWindows();
                         }
