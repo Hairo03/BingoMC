@@ -35,14 +35,18 @@ public class RoundParticipants {
         for (UUID id : participants) {
             Player p = Bukkit.getPlayer(id);
             if (p != null && p.isOnline()) {
-                try {
-                    p.setInvulnerable(preparing);
-                    p.setSilent(preparing);
-                    p.setCanPickupItems(!preparing);
-                } catch (Exception e) {
-                    Bukkit.getLogger().warning("Failed to set preparation state for " + p.getName() + ": " + e.getMessage());
-                }
+                applyPreparationStateToPlayer(p, preparing);
             }
+        }
+    }
+
+    public void applyPreparationStateToPlayer(Player player, boolean preparing) {
+        try {
+            player.setInvulnerable(preparing);
+            player.setSilent(preparing);
+            player.setCanPickupItems(!preparing);
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Failed to set preparation state for " + player.getName() + ": " + e.getMessage());
         }
     }
 }

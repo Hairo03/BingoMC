@@ -2,9 +2,7 @@
 
 ## Known Bugs
 
-- Rejoining during an active round shows the wrong message.
-- Rejoining after a round ends puts you back in your bingo world instead of the main world.
-- Leaving during the preparation phase leaves the player in `applyPreparationState` (frozen/blocked controls persist).
+- NONE
 
 ## Planned Features
 
