@@ -1,1 +1,8 @@
 preparation-countdown-seconds: 60
+
+goal-randomizer:
+  easy-count: 7
+  normal-count: 9
+  advanced-count: 8
+  hard-count: 3
+  extreme-count: 1
