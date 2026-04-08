@@ -142,3 +142,28 @@ If `goals.yml` is invalid at startup, plugin startup is aborted.
 | Multiverse-NetherPortals | 5.0.4 | Per-player Nether/End portal routing |
 | Multiverse-Inventories | 5.3.2 | Per-player inventory isolation |
 | InvUI | 2.0.0-beta.1 | GUI framework (bundled in plugin jar) |
+
+## Testing
+
+- **Prerequisites:** Java 21 (or newer) and network access so Gradle can download test dependencies. The project includes the Gradle wrapper (`./gradlew`).
+- **What:** Unit tests use JUnit and MockBukkit to simulate a Paper server; tests live under `src/test/java` and test resources under `src/test/resources` (a minimal `plugin.yml` and registry mappings are included).
+- **Run all tests:**
+
+```bash
+./gradlew test
+```
+
+- **Run a single test class:**
+
+```bash
+./gradlew test --tests "com.hairo.bingomc.round.RoundServiceTest"
+```
+
+- **Run tests with verbose output:**
+
+```bash
+./gradlew test --no-daemon --info
+```
+
+- **IDE:** Import the Gradle project into your IDE and run tests from the IDE runner.
+- **Notes:** Tests run headlessly and do not require a running Minecraft server. If you see classpath or dependency errors, ensure Gradle can access the network so it can fetch MockBukkit, JUnit, and the Paper test artifacts.
