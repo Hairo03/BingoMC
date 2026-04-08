@@ -35,7 +35,9 @@ Players compete to complete randomized goals across isolated per-player worlds. 
 gradlew.bat build
 ```
 
-Output: `build/libs/BingoMC-1.0.0-SNAPSHOT-dev.jar`
+Output:
+- `build/libs/BingoMC-1.0.0-SNAPSHOT.jar` (with dependencies shaded, for distribution)
+- `build/libs/BingoMC-1.0.0-SNAPSHOT-unshaded.jar` (without dependencies, idk if this is useful...)
 
 **Server setup:**
 

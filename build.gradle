@@ -64,12 +64,17 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 tasks.shadowJar {
-  archiveClassifier.set('dev')
+  archiveClassifier.set('')
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  from {
-    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-  }
+  relocate 'net.megavex.scoreboardlibrary', 'com.hairo.bingomc.libs.scoreboardlibrary'
+  relocate 'xyz.xenondevs.invui', 'com.hairo.bingomc.libs.invui'
 }
+
+tasks.jar {
+  archiveClassifier.set('unshaded')
+}
+
+build.dependsOn shadowJar
 
 tasks.test {
   useJUnitPlatform()
