@@ -25,6 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import xyz.xenondevs.invui.InvUI;
@@ -122,14 +123,12 @@ public class BingoMC extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        player.sendMessage(prefixed(
-            Component.text("Welcome, ", NamedTextColor.GREEN)
-                .append(Component.text(player.getName(), NamedTextColor.AQUA, TextDecoration.BOLD))
-                .append(Component.text("!", NamedTextColor.GREEN))
-        ));
-        getLogger().info(player.getName() + " joined the server");
-
         roundService.onPlayerJoin(player);
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        roundService.onPlayerQuit(event.getPlayer());
     }
 
     @EventHandler
