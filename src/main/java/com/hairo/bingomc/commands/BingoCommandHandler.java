@@ -1,6 +1,7 @@
 package com.hairo.bingomc.commands;
 
 import com.hairo.bingomc.goals.config.GoalLoadResult;
+import com.hairo.bingomc.goals.config.GoalOptionCatalog;
 import com.hairo.bingomc.goals.config.GoalsService;
 import com.hairo.bingomc.gui.GoalsAdminGui;
 import com.hairo.bingomc.gui.GoalsViewerGui;
@@ -13,6 +14,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.function.Function;
 
 public class BingoCommandHandler {
@@ -20,6 +23,7 @@ public class BingoCommandHandler {
     private final JavaPlugin plugin;
     private final RoundService roundService;
     private final GoalsService goalsService;
+    private final GoalOptionsExporter goalOptionsExporter;
     private final GoalsViewerGui goalsViewerGui;
     private final GoalsAdminGui goalsAdminGui;
     private final NewGameGui newGameGui;
@@ -29,6 +33,7 @@ public class BingoCommandHandler {
         JavaPlugin plugin,
         RoundService roundService,
         GoalsService goalsService,
+        GoalOptionCatalog goalOptionCatalog,
         GoalsViewerGui goalsViewerGui,
         GoalsAdminGui goalsAdminGui,
         NewGameGui newGameGui,
@@ -37,6 +42,7 @@ public class BingoCommandHandler {
         this.plugin = plugin;
         this.roundService = roundService;
         this.goalsService = goalsService;
+        this.goalOptionsExporter = new GoalOptionsExporter(plugin, goalOptionCatalog);
         this.goalsViewerGui = goalsViewerGui;
         this.goalsAdminGui = goalsAdminGui;
         this.newGameGui = newGameGui;
@@ -150,6 +156,22 @@ public class BingoCommandHandler {
             loaded ? "Goals reloaded." : "Could not reload goals; see console for details.",
             loaded ? NamedTextColor.GREEN : NamedTextColor.RED
         )));
+        return true;
+    }
+
+    public boolean handleExportCommand(CommandSender sender) {
+        try {
+            Path output = goalOptionsExporter.export();
+            sender.sendMessage(prefixer.apply(
+                Component.text("Exported goal options to: ", NamedTextColor.GREEN)
+                    .append(Component.text(output.toString(), NamedTextColor.AQUA))
+            ));
+        } catch (IOException ex) {
+            plugin.getLogger().severe("Failed to export goal options: " + ex.getMessage());
+            sender.sendMessage(prefixer.apply(
+                Component.text("Export failed; see console for details.", NamedTextColor.RED)
+            ));
+        }
         return true;
     }
 }

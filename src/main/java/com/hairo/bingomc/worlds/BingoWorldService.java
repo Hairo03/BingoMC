@@ -16,6 +16,7 @@ import org.mvplugins.multiverse.inventories.MultiverseInventoriesApi;
 import org.mvplugins.multiverse.inventories.profile.group.WorldGroup;
 import org.mvplugins.multiverse.inventories.profile.group.WorldGroupManager;
 import org.mvplugins.multiverse.netherportals.MultiverseNetherPortals;
+import org.mvplugins.multiverse.inventories.share.Sharables;
 
 import java.io.File;
 import java.io.IOException;
@@ -436,6 +437,7 @@ public class BingoWorldService {
             }
 
             WorldGroup group = manager.newEmptyGroup(worldSet.inventoryGroupName());
+            group.getShares().mergeShares(Sharables.ALL_DEFAULT);
             group.addWorld(worldSet.overworldName(), false);
             group.addWorld(worldSet.netherName(), false);
             group.addWorld(worldSet.endName(), false);
