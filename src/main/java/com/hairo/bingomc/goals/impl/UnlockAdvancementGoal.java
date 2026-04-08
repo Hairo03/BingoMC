@@ -68,11 +68,16 @@ public class UnlockAdvancementGoal implements PlayerGoal, RoundAwareGoal {
     }
 
     @Override
-    public String descriptionText() {
+    public String descriptionText(boolean shortFormat) {
         Advancement advancement = Bukkit.getServer().getAdvancement(advancementKey);
         if (advancement != null && advancement.getDisplay() != null && advancement.getDisplay().title() != null) {
             PlainTextComponentSerializer plainSerializer = PlainTextComponentSerializer.plainText();
             String advancementName = plainSerializer.serialize(advancement.getDisplay().title()).trim();
+
+            if (shortFormat) {
+                return "Unlock " + advancementName;
+            } 
+
             return "Unlock the advancement '" + (advancementName.isEmpty() ? advancementKey.getKey() : advancementName) + "'";
         }
 

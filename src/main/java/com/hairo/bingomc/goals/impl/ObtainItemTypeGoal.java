@@ -65,7 +65,22 @@ public class ObtainItemTypeGoal implements PlayerGoal, AmountBasedGoal {
     }
 
     @Override
-    public String descriptionText() {
+    public int currentProgress(Player player) {
+        int count = 0;
+        for (ItemStack stack : player.getInventory().getContents()) {
+            if (stack != null && stack.getType() != Material.AIR && tag.isTagged(stack.getType())) {
+                count += stack.getAmount();
+            }
+        }
+        return Math.min(count, amount);
+    }
+
+    @Override
+    public String descriptionText(boolean shortFormat) {
+        if (shortFormat) {
+            return "Obtain any " + tagKey.getKey().replace('_', ' ');
+        }
+
         String name = tagKey.getKey().replace('_', ' ');
         return "Obtain " + amount + " of any " + name;
     }

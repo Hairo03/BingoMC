@@ -14,5 +14,9 @@ public interface PlayerGoal {
 
     boolean isComplete(Player player);
 
-    String descriptionText();
+    default String descriptionText() {
+        return descriptionText(false);
+    }
+
+    String descriptionText(boolean shortFormat);
 }

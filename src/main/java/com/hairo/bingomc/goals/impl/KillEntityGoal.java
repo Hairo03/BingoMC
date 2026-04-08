@@ -58,13 +58,24 @@ public class KillEntityGoal implements PlayerGoal, RoundAwareGoal, AmountBasedGo
     }
 
     @Override
-    public String descriptionText() {
+    public String descriptionText(boolean shortFormat) {
+        if (shortFormat) {
+            return "Kill " + entityType.name().toLowerCase().replace('_', ' ');
+        }
+
         return "Kill " + amount + " " + entityType.name().toLowerCase().replace('_', ' ');
     }
 
     @Override
     public void onRoundStart(Player player) {
         roundBaselineKillCount.put(player.getUniqueId(), player.getStatistic(Statistic.KILL_ENTITY, entityType));
+    }
+
+    @Override
+    public int currentProgress(Player player) {
+        int current = player.getStatistic(Statistic.KILL_ENTITY, entityType);
+        int baseline = roundBaselineKillCount.getOrDefault(player.getUniqueId(), current);
+        return Math.max(0, Math.min(current - baseline, amount));
     }
 
     @Override

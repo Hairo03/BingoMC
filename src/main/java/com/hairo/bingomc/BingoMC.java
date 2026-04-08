@@ -3,9 +3,12 @@ package com.hairo.bingomc;
 import com.hairo.bingomc.goals.core.GoalManager;
 import com.hairo.bingomc.goals.config.GoalConfigService;
 import com.hairo.bingomc.goals.config.GoalOptionCatalog;
+import com.hairo.bingomc.goals.config.GoalRandomizerService;
 import com.hairo.bingomc.goals.config.GoalsService;
+import com.hairo.bingomc.goals.config.RandomGoalPoolService;
 import com.hairo.bingomc.commands.BingoCommandHandler;
 import com.hairo.bingomc.gui.GoalsAdminGui;
+import com.hairo.bingomc.gui.GoalsSidebar;
 import com.hairo.bingomc.gui.GoalsViewerGui;
 import com.hairo.bingomc.gui.NewGameGui;
 import com.hairo.bingomc.listeners.GoalEventListener;
@@ -22,6 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import xyz.xenondevs.invui.InvUI;
@@ -34,6 +38,7 @@ public class BingoMC extends JavaPlugin implements Listener {
 
     private final GoalManager goalManager = new GoalManager();
     private final GoalOptionCatalog goalOptionCatalog = new GoalOptionCatalog();
+    private GoalsSidebar goalsSidebar;
     private GoalsViewerGui goalsViewerGui;
     private GoalsAdminGui goalsAdminGui;
     private NewGameGui newGameGui;
@@ -46,8 +51,12 @@ public class BingoMC extends JavaPlugin implements Listener {
         saveDefaultConfig();
         GoalConfigService goalConfigService = new GoalConfigService(this);
         goalsService = new GoalsService(this, goalConfigService, goalManager);
-        goalsViewerGui = new GoalsViewerGui(this);
-        goalsAdminGui = new GoalsAdminGui(this);
+        goalsSidebar = new GoalsSidebar(this, goalManager);
+        goalManager.setCompletionCallback(goalsSidebar::onGoalCompleted);
+        goalsViewerGui = new GoalsViewerGui(this, goalsSidebar);
+        RandomGoalPoolService poolService = new RandomGoalPoolService(this, goalConfigService);
+        GoalRandomizerService randomizerService = new GoalRandomizerService(this, poolService, goalsService);
+        goalsAdminGui = new GoalsAdminGui(this, randomizerService);
         newGameGui = new NewGameGui();
         try {
             InvUI.getInstance().setPlugin(this);
@@ -74,6 +83,7 @@ public class BingoMC extends JavaPlugin implements Listener {
             this::prefixed
         );
         roundService.initialize();
+        roundService.setGuiComponents(this, goalsSidebar, goalsViewerGui);
 
         commandHandler = new BingoCommandHandler(
             this,
@@ -102,6 +112,7 @@ public class BingoMC extends JavaPlugin implements Listener {
             return;
         }
 
+        poolService.loadPool(); // validate random goal pool at startup; logs warnings, never aborts
         roundService.startTicker();
     }
 
@@ -116,14 +127,12 @@ public class BingoMC extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        player.sendMessage(prefixed(
-            Component.text("Welcome, ", NamedTextColor.GREEN)
-                .append(Component.text(player.getName(), NamedTextColor.AQUA, TextDecoration.BOLD))
-                .append(Component.text("!", NamedTextColor.GREEN))
-        ));
-        getLogger().info(player.getName() + " joined the server");
-
         roundService.onPlayerJoin(player);
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        roundService.onPlayerQuit(event.getPlayer());
     }
 
     @EventHandler

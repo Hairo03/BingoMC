@@ -1,0 +1,838 @@
+# Auto-generated from random_goals.csv — do not edit directly.
+# Run scripts/csv_to_yml.py to regenerate.
+# Admins can also manually add/edit goals in the plugin data folder copy.
+random_goals:
+  - id: easy_adventurer_craft_item_bread
+    difficulty: easy
+    playstyle: adventurer
+    type: craft_item
+    points: 5
+    icon: 'minecraft:bread'
+    material: 'minecraft:bread'
+    amount: 1
+  - id: easy_adventurer_obtain_item_dirt
+    difficulty: easy
+    playstyle: adventurer
+    type: obtain_item
+    points: 5
+    icon: 'minecraft:dirt'
+    material: 'minecraft:dirt'
+    amount: 32
+  - id: easy_adventurer_kill_entity_chicken
+    difficulty: easy
+    playstyle: adventurer
+    type: kill_entity
+    points: 5
+    icon: 'minecraft:egg'
+    entity_type: 'minecraft:chicken'
+    amount: 3
+  - id: easy_adventurer_obtain_item_oak_log
+    difficulty: easy
+    playstyle: adventurer
+    type: obtain_item
+    points: 5
+    icon: 'minecraft:oak_log'
+    material: 'minecraft:oak_log'
+    amount: 16
+  - id: easy_adventurer_obtain_item_birch_log
+    difficulty: easy
+    playstyle: adventurer
+    type: obtain_item
+    points: 5
+    icon: 'minecraft:birch_log'
+    material: 'minecraft:birch_log'
+    amount: 16
+  - id: easy_spelunker_reach_y_level_y_1_down
+    difficulty: easy
+    playstyle: spelunker
+    type: reach_y_level
+    points: 5
+    icon: 'minecraft:deepslate'
+    level: -1
+    direction: DOWN
+  - id: easy_technician_craft_item_leather_boots
+    difficulty: easy
+    playstyle: technician
+    type: craft_item
+    points: 5
+    icon: 'minecraft:leather_boots'
+    material: 'minecraft:leather_boots'
+    amount: 1
+  - id: easy_survivalist_kill_entity_cow
+    difficulty: easy
+    playstyle: survivalist
+    type: kill_entity
+    points: 5
+    icon: 'minecraft:leather'
+    entity_type: 'minecraft:cow'
+    amount: 3
+  - id: easy_survivalist_kill_entity_pig
+    difficulty: easy
+    playstyle: survivalist
+    type: kill_entity
+    points: 5
+    icon: 'minecraft:porkchop'
+    entity_type: 'minecraft:pig'
+    amount: 3
+  - id: easy_survivalist_consume_item_cooked_beef
+    difficulty: easy
+    playstyle: survivalist
+    type: consume_item
+    points: 5
+    icon: 'minecraft:cooked_beef'
+    material: 'minecraft:cooked_beef'
+    amount: 3
+  - id: easy_survivalist_consume_item_apple
+    difficulty: easy
+    playstyle: survivalist
+    type: consume_item
+    points: 5
+    icon: 'minecraft:apple'
+    material: 'minecraft:apple'
+    amount: 1
+  - id: easy_survivalist_craft_item_crafting_table
+    difficulty: easy
+    playstyle: survivalist
+    type: craft_item
+    points: 5
+    icon: 'minecraft:crafting_table'
+    material: 'minecraft:crafting_table'
+    amount: 1
+  - id: easy_survivalist_unlock_advancement_adventure_sleep_in_bed
+    difficulty: easy
+    playstyle: survivalist
+    type: unlock_advancement
+    points: 5
+    icon: 'minecraft:red_bed'
+    advancement_key: 'minecraft:adventure/sleep_in_bed'
+  - id: easy_survivalist_obtain_item_flint
+    difficulty: easy
+    playstyle: survivalist
+    type: obtain_item
+    points: 5
+    icon: 'minecraft:flint'
+    material: 'minecraft:flint'
+    amount: 3
+  - id: easy_survivalist_obtain_item_wheat_seeds
+    difficulty: easy
+    playstyle: survivalist
+    type: obtain_item
+    points: 5
+    icon: 'minecraft:wheat_seeds'
+    material: 'minecraft:wheat_seeds'
+    amount: 8
+  - id: normal_adventurer_reach_y_level_y191_up
+    difficulty: normal
+    playstyle: adventurer
+    type: reach_y_level
+    points: 10
+    icon: 'minecraft:light_blue_concrete'
+    level: 191
+    direction: UP
+  - id: normal_adventurer_obtain_item_glow_ink_sac
+    difficulty: normal
+    playstyle: adventurer
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:glow_ink_sac'
+    material: 'minecraft:glow_ink_sac'
+    amount: 1
+  - id: normal_adventurer_enter_structure_desert_pyramid
+    difficulty: normal
+    playstyle: adventurer
+    type: enter_structure
+    points: 25
+    icon: 'minecraft:sandstone_stairs'
+    structure: 'minecraft:desert_pyramid'
+  - id: normal_adventurer_obtain_item_seagrass
+    difficulty: normal
+    playstyle: adventurer
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:seagrass'
+    material: 'minecraft:seagrass'
+    amount: 5
+  - id: normal_adventurer_obtain_item_clay
+    difficulty: normal
+    playstyle: adventurer
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:clay'
+    material: 'minecraft:clay'
+    amount: 3
+  - id: normal_adventurer_obtain_item_spruce_log
+    difficulty: normal
+    playstyle: adventurer
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:spruce_log'
+    material: 'minecraft:spruce_log'
+    amount: 16
+  - id: normal_combatant_kill_entity_bee
+    difficulty: normal
+    playstyle: combatant
+    type: kill_entity
+    points: 10
+    icon: 'minecraft:bee_nest'
+    entity_type: 'minecraft:bee'
+    amount: 1
+  - id: normal_combatant_obtain_item_string
+    difficulty: normal
+    playstyle: combatant
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:string'
+    material: 'minecraft:string'
+    amount: 16
+  - id: normal_combatant_craft_item_shield
+    difficulty: normal
+    playstyle: combatant
+    type: craft_item
+    points: 10
+    icon: 'minecraft:shield'
+    material: 'minecraft:shield'
+    amount: 1
+  - id: normal_combatant_kill_entity_zombie
+    difficulty: normal
+    playstyle: combatant
+    type: kill_entity
+    points: 10
+    icon: 'minecraft:zombie_head'
+    entity_type: 'minecraft:zombie'
+    amount: 5
+  - id: normal_combatant_kill_entity_enderman
+    difficulty: normal
+    playstyle: combatant
+    type: kill_entity
+    points: 10
+    icon: 'minecraft:enderman_spawn_egg'
+    entity_type: 'minecraft:enderman'
+    amount: 1
+  - id: normal_combatant_obtain_item_ender_pearl
+    difficulty: normal
+    playstyle: combatant
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:ender_pearl'
+    material: 'minecraft:ender_pearl'
+    amount: 1
+  - id: normal_combatant_craft_item_bow
+    difficulty: normal
+    playstyle: combatant
+    type: craft_item
+    points: 10
+    icon: 'minecraft:bow'
+    material: 'minecraft:bow'
+    amount: 1
+  - id: normal_spelunker_obtain_item_diorite
+    difficulty: normal
+    playstyle: spelunker
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:diorite'
+    material: 'minecraft:diorite'
+    amount: 16
+  - id: normal_spelunker_obtain_item_granite
+    difficulty: normal
+    playstyle: spelunker
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:granite'
+    material: 'minecraft:granite'
+    amount: 16
+  - id: normal_spelunker_obtain_item_iron_ingot
+    difficulty: normal
+    playstyle: spelunker
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:iron_ingot'
+    material: 'minecraft:iron_ingot'
+    amount: 24
+  - id: normal_spelunker_obtain_item_coal
+    difficulty: normal
+    playstyle: spelunker
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:coal'
+    material: 'minecraft:coal'
+    amount: 32
+  - id: normal_technician_craft_item_leather_chestplate
+    difficulty: normal
+    playstyle: technician
+    type: craft_item
+    points: 10
+    icon: 'minecraft:leather_chestplate'
+    material: 'minecraft:leather_chestplate'
+    amount: 1
+  - id: normal_technician_obtain_item_lava_bucket
+    difficulty: normal
+    playstyle: technician
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:lava_bucket'
+    material: 'minecraft:lava_bucket'
+    amount: 1
+  - id: normal_technician_craft_item_golden_carrot
+    difficulty: normal
+    playstyle: technician
+    type: craft_item
+    points: 10
+    icon: 'minecraft:golden_carrot'
+    material: 'minecraft:golden_carrot'
+    amount: 1
+  - id: normal_survivalist_unlock_advancement_husbandry_tame_an_animal
+    difficulty: normal
+    playstyle: survivalist
+    type: unlock_advancement
+    points: 10
+    icon: 'minecraft:lead'
+    advancement_key: 'minecraft:husbandry/tame_an_animal'
+  - id: normal_survivalist_obtain_item_type_fishes
+    difficulty: normal
+    playstyle: survivalist
+    type: obtain_item_type
+    points: 10
+    icon: 'minecraft:fishing_rod'
+    material_type: 'minecraft:fishes'
+    amount: 1
+  - id: normal_survivalist_obtain_item_leather
+    difficulty: normal
+    playstyle: survivalist
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:leather'
+    material: 'minecraft:leather'
+    amount: 5
+  - id: normal_survivalist_obtain_item_milk_bucket
+    difficulty: normal
+    playstyle: survivalist
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:milk_bucket'
+    material: 'minecraft:milk_bucket'
+    amount: 1
+  - id: normal_survivalist_craft_item_brush
+    difficulty: normal
+    playstyle: survivalist
+    type: craft_item
+    points: 10
+    icon: 'minecraft:brush'
+    material: 'minecraft:brush'
+    amount: 1
+  - id: normal_survivalist_obtain_item_flint
+    difficulty: normal
+    playstyle: survivalist
+    type: obtain_item
+    points: 10
+    icon: 'minecraft:flint'
+    material: 'minecraft:flint'
+    amount: 10
+  - id: advanced_adventurer_obtain_item_cherry_log
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:cherry_log'
+    material: 'minecraft:cherry_log'
+    amount: 1
+  - id: advanced_adventurer_obtain_item_emerald
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:emerald'
+    material: 'minecraft:emerald'
+    amount: 3
+  - id: advanced_adventurer_obtain_item_glow_berries
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:glow_berries'
+    material: 'minecraft:glow_berries'
+    amount: 64
+  - id: advanced_adventurer_unlock_advancement_husbandry_axolotl_in_a_bucket
+    difficulty: advanced
+    playstyle: adventurer
+    type: unlock_advancement
+    points: 25
+    icon: 'minecraft:axolotl_bucket'
+    advancement_key: 'minecraft:husbandry/axolotl_in_a_bucket'
+  - id: advanced_adventurer_obtain_item_obsidian
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:obsidian'
+    material: 'minecraft:obsidian'
+    amount: 3
+  - id: advanced_adventurer_obtain_item_heart_of_the_sea
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:heart_of_the_sea'
+    material: 'minecraft:heart_of_the_sea'
+    amount: 1
+  - id: advanced_adventurer_obtain_item_sugar_cane
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:sugar_cane'
+    material: 'minecraft:sugar_cane'
+    amount: 16
+  - id: advanced_adventurer_obtain_item_pale_oak_log
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:pale_oak_log'
+    material: 'minecraft:pale_oak_log'
+    amount: 16
+  - id: advanced_adventurer_obtain_item_dark_oak_log
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:dark_oak_log'
+    material: 'minecraft:dark_oak_log'
+    amount: 16
+  - id: advanced_adventurer_obtain_item_acacia_log
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:acacia_log'
+    material: 'minecraft:acacia_log'
+    amount: 16
+  - id: advanced_adventurer_obtain_item_jungle_log
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:jungle_log'
+    material: 'minecraft:jungle_log'
+    amount: 16
+  - id: advanced_adventurer_obtain_item_mangrove_log
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:mangrove_log'
+    material: 'minecraft:mangrove_log'
+    amount: 16
+  - id: advanced_adventurer_obtain_item_cherry_log_1
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:cherry_log'
+    material: 'minecraft:cherry_log'
+    amount: 16
+  - id: advanced_adventurer_obtain_item_ink_sac
+    difficulty: advanced
+    playstyle: adventurer
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:ink_sac'
+    material: 'minecraft:ink_sac'
+    amount: 10
+  - id: advanced_adventurer_enter_structure_igloo
+    difficulty: advanced
+    playstyle: adventurer
+    type: enter_structure
+    points: 25
+    icon: 'minecraft:snow_block'
+    structure: 'minecraft:igloo'
+  - id: advanced_adventurer_enter_structure_mineshaft
+    difficulty: advanced
+    playstyle: adventurer
+    type: enter_structure
+    points: 25
+    icon: 'minecraft:minecart'
+    structure: 'minecraft:mineshaft'
+  - id: advanced_adventurer_enter_structure_pillager_outpost
+    difficulty: advanced
+    playstyle: adventurer
+    type: enter_structure
+    points: 25
+    icon: 'minecraft:crossbow'
+    structure: 'minecraft:pillager_outpost'
+  - id: advanced_adventurer_enter_structure_village_plains
+    difficulty: advanced
+    playstyle: adventurer
+    type: enter_structure
+    points: 25
+    icon: 'minecraft:grass_block'
+    structure: 'minecraft:village_plains'
+  - id: advanced_adventurer_enter_structure_village_desert
+    difficulty: advanced
+    playstyle: adventurer
+    type: enter_structure
+    points: 25
+    icon: 'minecraft:sand'
+    structure: 'minecraft:village_desert'
+  - id: advanced_adventurer_enter_structure_village_savanna
+    difficulty: advanced
+    playstyle: adventurer
+    type: enter_structure
+    points: 25
+    icon: 'minecraft:acacia_door'
+    structure: 'minecraft:village_savanna'
+  - id: advanced_adventurer_enter_structure_village_snowy
+    difficulty: advanced
+    playstyle: adventurer
+    type: enter_structure
+    points: 25
+    icon: 'minecraft:snow_block'
+    structure: 'minecraft:village_snowy'
+  - id: advanced_adventurer_enter_structure_village_taiga
+    difficulty: advanced
+    playstyle: adventurer
+    type: enter_structure
+    points: 25
+    icon: 'minecraft:spruce_door'
+    structure: 'minecraft:village_taiga'
+  - id: advanced_combatant_craft_item_diamond_spear
+    difficulty: advanced
+    playstyle: combatant
+    type: craft_item
+    points: 25
+    icon: 'minecraft:diamond_spear'
+    material: 'minecraft:diamond_spear'
+    amount: 1
+  - id: advanced_combatant_kill_entity_pillager
+    difficulty: advanced
+    playstyle: combatant
+    type: kill_entity
+    points: 25
+    icon: 'minecraft:pillager_spawn_egg'
+    entity_type: 'minecraft:pillager'
+    amount: 1
+  - id: advanced_combatant_obtain_item_spider_eye
+    difficulty: advanced
+    playstyle: combatant
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:spider_eye'
+    material: 'minecraft:spider_eye'
+    amount: 5
+  - id: advanced_combatant_obtain_item_gunpowder
+    difficulty: advanced
+    playstyle: combatant
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:gunpowder'
+    material: 'minecraft:gunpowder'
+    amount: 5
+  - id: advanced_spelunker_unlock_advancement_adventure_avoid_vibration
+    difficulty: advanced
+    playstyle: spelunker
+    type: unlock_advancement
+    points: 25
+    icon: 'minecraft:sculk_shrieker'
+    advancement_key: 'minecraft:adventure/avoid_vibration'
+  - id: advanced_spelunker_reach_y_level_y_60_down
+    difficulty: advanced
+    playstyle: spelunker
+    type: reach_y_level
+    points: 25
+    icon: 'minecraft:bedrock'
+    level: -60
+    direction: DOWN
+  - id: advanced_spelunker_obtain_item_cobblestone
+    difficulty: advanced
+    playstyle: spelunker
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:cobblestone'
+    material: 'minecraft:cobblestone'
+    amount: 192
+  - id: advanced_spelunker_obtain_item_diamond
+    difficulty: advanced
+    playstyle: spelunker
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:diamond'
+    material: 'minecraft:diamond'
+    amount: 3
+  - id: advanced_spelunker_obtain_item_copper_ingot
+    difficulty: advanced
+    playstyle: spelunker
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:copper_ingot'
+    material: 'minecraft:copper_ingot'
+    amount: 24
+  - id: advanced_spelunker_craft_item_diamond_pickaxe
+    difficulty: advanced
+    playstyle: spelunker
+    type: craft_item
+    points: 25
+    icon: 'minecraft:diamond_pickaxe'
+    material: 'minecraft:diamond_pickaxe'
+    amount: 1
+  - id: advanced_spelunker_obtain_item_lapis_lazuli
+    difficulty: advanced
+    playstyle: spelunker
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:lapis_lazuli'
+    material: 'minecraft:lapis_lazuli'
+    amount: 16
+  - id: advanced_spelunker_obtain_item_redstone
+    difficulty: advanced
+    playstyle: spelunker
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:redstone'
+    material: 'minecraft:redstone'
+    amount: 16
+  - id: advanced_spelunker_obtain_item_deepslate
+    difficulty: advanced
+    playstyle: spelunker
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:deepslate'
+    material: 'minecraft:deepslate'
+    amount: 128
+  - id: advanced_spelunker_obtain_item_gold_ingot
+    difficulty: advanced
+    playstyle: spelunker
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:gold_ingot'
+    material: 'minecraft:gold_ingot'
+    amount: 20
+  - id: advanced_technician_use_vehicle_pig
+    difficulty: advanced
+    playstyle: technician
+    type: use_vehicle
+    points: 25
+    icon: 'minecraft:carrot_on_a_stick'
+    entity_type: 'minecraft:pig'
+  - id: advanced_technician_obtain_item_compass
+    difficulty: advanced
+    playstyle: technician
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:compass'
+    material: 'minecraft:compass'
+    amount: 1
+  - id: advanced_technician_obtain_item_glass
+    difficulty: advanced
+    playstyle: technician
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:glass'
+    material: 'minecraft:glass'
+    amount: 16
+  - id: advanced_technician_obtain_item_cake
+    difficulty: advanced
+    playstyle: technician
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:cake'
+    material: 'minecraft:cake'
+    amount: 1
+  - id: advanced_technician_craft_item_pumpkin_pie
+    difficulty: advanced
+    playstyle: technician
+    type: craft_item
+    points: 25
+    icon: 'minecraft:pumpkin_pie'
+    material: 'minecraft:pumpkin_pie'
+    amount: 1
+  - id: advanced_technician_craft_item_scaffolding
+    difficulty: advanced
+    playstyle: technician
+    type: craft_item
+    points: 25
+    icon: 'minecraft:scaffolding'
+    material: 'minecraft:scaffolding'
+    amount: 10
+  - id: advanced_technician_craft_item_golden_apple
+    difficulty: advanced
+    playstyle: technician
+    type: craft_item
+    points: 25
+    icon: 'minecraft:golden_apple'
+    material: 'minecraft:golden_apple'
+    amount: 1
+  - id: advanced_technician_obtain_item_smooth_stone
+    difficulty: advanced
+    playstyle: technician
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:smooth_stone'
+    material: 'minecraft:smooth_stone'
+    amount: 10
+  - id: advanced_survivalist_obtain_item_pufferfish
+    difficulty: advanced
+    playstyle: survivalist
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:pufferfish'
+    material: 'minecraft:pufferfish'
+    amount: 1
+  - id: advanced_survivalist_obtain_item_honey_bottle
+    difficulty: advanced
+    playstyle: survivalist
+    type: obtain_item
+    points: 25
+    icon: 'minecraft:honey_bottle'
+    material: 'minecraft:honey_bottle'
+    amount: 1
+  - id: hard_adventurer_craft_item_glowstone
+    difficulty: hard
+    playstyle: adventurer
+    type: craft_item
+    points: 50
+    icon: 'minecraft:glowstone'
+    material: 'minecraft:glowstone'
+    amount: 1
+  - id: hard_adventurer_obtain_item_snowball
+    difficulty: hard
+    playstyle: adventurer
+    type: obtain_item
+    points: 50
+    icon: 'minecraft:snowball'
+    material: 'minecraft:snowball'
+    amount: 16
+  - id: hard_adventurer_obtain_item_amethyst_shard
+    difficulty: hard
+    playstyle: adventurer
+    type: obtain_item
+    points: 50
+    icon: 'minecraft:amethyst_shard'
+    material: 'minecraft:amethyst_shard'
+    amount: 1
+  - id: hard_adventurer_craft_item_spyglass
+    difficulty: hard
+    playstyle: adventurer
+    type: craft_item
+    points: 50
+    icon: 'minecraft:spyglass'
+    material: 'minecraft:spyglass'
+    amount: 1
+  - id: hard_adventurer_change_dimension_the_nether
+    difficulty: hard
+    playstyle: adventurer
+    type: change_dimension
+    points: 50
+    icon: 'minecraft:obsidian'
+    dimension: 'minecraft:the_nether'
+  - id: hard_adventurer_obtain_item_crimson_stem
+    difficulty: hard
+    playstyle: adventurer
+    type: obtain_item
+    points: 50
+    icon: 'minecraft:crimson_stem'
+    material: 'minecraft:crimson_stem'
+    amount: 16
+  - id: hard_adventurer_obtain_item_warped_stem
+    difficulty: hard
+    playstyle: adventurer
+    type: obtain_item
+    points: 50
+    icon: 'minecraft:warped_stem'
+    material: 'minecraft:warped_stem'
+    amount: 16
+  - id: hard_adventurer_enter_structure_swamp_hut
+    difficulty: hard
+    playstyle: adventurer
+    type: enter_structure
+    points: 50
+    icon: 'minecraft:potion'
+    structure: 'minecraft:swamp_hut'
+  - id: hard_combatant_unlock_advancement_nether_return_to_sender
+    difficulty: hard
+    playstyle: combatant
+    type: unlock_advancement
+    points: 50
+    icon: 'minecraft:fire_charge'
+    advancement_key: 'minecraft:nether/return_to_sender'
+  - id: hard_combatant_unlock_advancement_adventure_minecraft_trials_edition
+    difficulty: hard
+    playstyle: combatant
+    type: unlock_advancement
+    points: 50
+    icon: 'minecraft:trial_key'
+    advancement_key: 'minecraft:adventure/minecraft_trials_edition'
+  - id: hard_spelunker_obtain_item_quartz
+    difficulty: hard
+    playstyle: spelunker
+    type: obtain_item
+    points: 50
+    icon: 'minecraft:quartz'
+    material: 'minecraft:quartz'
+    amount: 16
+  - id: hard_spelunker_obtain_item_netherrack
+    difficulty: hard
+    playstyle: spelunker
+    type: obtain_item
+    points: 50
+    icon: 'minecraft:netherrack'
+    material: 'minecraft:netherrack'
+    amount: 64
+  - id: hard_technician_unlock_advancement_adventure_summon_iron_golem
+    difficulty: hard
+    playstyle: technician
+    type: unlock_advancement
+    points: 50
+    icon: 'minecraft:carved_pumpkin'
+    advancement_key: 'minecraft:adventure/summon_iron_golem'
+  - id: hard_technician_craft_item_cookie
+    difficulty: hard
+    playstyle: technician
+    type: craft_item
+    points: 50
+    icon: 'minecraft:cookie'
+    material: 'minecraft:cookie'
+    amount: 1
+  - id: extreme_adventurer_enter_structure_stronghold
+    difficulty: extreme
+    playstyle: adventurer
+    type: enter_structure
+    points: 100
+    icon: 'minecraft:end_portal_frame'
+    structure: 'minecraft:stronghold'
+  - id: extreme_adventurer_unlock_advancement_adventure_spyglass_at_parrot
+    difficulty: extreme
+    playstyle: adventurer
+    type: unlock_advancement
+    points: 100
+    icon: 'minecraft:spyglass'
+    advancement_key: 'minecraft:adventure/spyglass_at_parrot'
+  - id: extreme_adventurer_obtain_item_slime_ball
+    difficulty: extreme
+    playstyle: adventurer
+    type: obtain_item
+    points: 100
+    icon: 'minecraft:slime_ball'
+    material: 'minecraft:slime_ball'
+    amount: 1
+  - id: extreme_adventurer_enter_structure_mansion
+    difficulty: extreme
+    playstyle: adventurer
+    type: enter_structure
+    points: 100
+    icon: 'minecraft:dark_oak_door'
+    structure: 'minecraft:mansion'
+  - id: extreme_combatant_obtain_item_blaze_rod
+    difficulty: extreme
+    playstyle: combatant
+    type: obtain_item
+    points: 100
+    icon: 'minecraft:blaze_rod'
+    material: 'minecraft:blaze_rod'
+    amount: 1
+  - id: extreme_spelunker_obtain_item_ancient_debris
+    difficulty: extreme
+    playstyle: spelunker
+    type: obtain_item
+    points: 100
+    icon: 'minecraft:ancient_debris'
+    material: 'minecraft:ancient_debris'
+    amount: 1

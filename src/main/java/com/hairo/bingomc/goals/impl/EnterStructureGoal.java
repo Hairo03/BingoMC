@@ -59,7 +59,11 @@ public class EnterStructureGoal implements PlayerGoal {
     }
 
     @Override
-    public String descriptionText() {
+    public String descriptionText(boolean shortFormat) {
+        if (shortFormat) {
+            return "Enter " + targetStructureKey.getKey().replace('_', ' ');
+        }
+
         String keyName = targetStructureKey.getKey().replace('_', ' ');
         return "Find and enter a " + keyName;
     }

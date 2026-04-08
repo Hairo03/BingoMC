@@ -30,3 +30,6 @@ Thumbs.db
 out/
 bin/
 dist/
+
+# Agentic
+CLAUDE.md

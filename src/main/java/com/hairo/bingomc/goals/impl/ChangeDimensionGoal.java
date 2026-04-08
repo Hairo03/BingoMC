@@ -42,7 +42,11 @@ public class ChangeDimensionGoal implements PlayerGoal {
 	}
 
 	@Override
-	public String descriptionText() {
+	public String descriptionText(boolean shortFormat) {
+		if (shortFormat) {
+			return "Enter " + targetDimension.name().toLowerCase();
+		}
+
         return "Enter the " + targetDimension.name().toLowerCase();
 	}
 }

@@ -57,13 +57,24 @@ public class ItemCraftGoal implements PlayerGoal, RoundAwareGoal, AmountBasedGoa
     }
 
     @Override
-    public String descriptionText() {
+    public String descriptionText(boolean shortFormat) {
+        if (shortFormat) {
+            return "Craft " + item.name().toLowerCase().replace('_', ' ');
+        }
+
         return "Craft " + amount + " " + item.name().toLowerCase().replace('_', ' ');
     }
 
     @Override
     public void onRoundStart(Player player) {
         roundBaselineCraftCount.put(player.getUniqueId(), player.getStatistic(Statistic.CRAFT_ITEM, item));
+    }
+
+    @Override
+    public int currentProgress(Player player) {
+        int current = player.getStatistic(Statistic.CRAFT_ITEM, item);
+        int baseline = roundBaselineCraftCount.getOrDefault(player.getUniqueId(), current);
+        return Math.max(0, Math.min(current - baseline, amount));
     }
 
     @Override

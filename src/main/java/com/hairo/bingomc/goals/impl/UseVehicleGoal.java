@@ -48,7 +48,11 @@ public class UseVehicleGoal implements PlayerGoal {
     }
 
     @Override
-    public String descriptionText() {
+    public String descriptionText(boolean shortFormat) {
+        if (shortFormat) {
+            return "Ride " + vehicleType.name().toLowerCase().replace('_', ' ');
+        }
+
         return "Ride a " + vehicleType.name().toLowerCase().replace('_', ' ');
     }
 

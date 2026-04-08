@@ -74,7 +74,16 @@ public class ConsumeItemGoal implements PlayerGoal, AmountBasedGoal, ConsumeAwar
     }
 
     @Override
-    public String descriptionText() {
+    public int currentProgress(Player player) {
+        return Math.min(consumeCount.getOrDefault(player.getUniqueId(), 0), amount);
+    }
+
+    @Override
+    public String descriptionText(boolean shortFormat) {
+        if (shortFormat) {
+            return "Eat " + item.name().toLowerCase().replace('_', ' ');
+        }
+
         return "Consume " + amount + " " + item.name().toLowerCase().replace('_', ' ');
     }
 }

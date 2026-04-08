@@ -1,5 +1,6 @@
 plugins {
   id 'java'
+  id 'com.gradleup.shadow' version '9.0.0-beta4'
 }
 
 group = 'com.hairo.bingomc'
@@ -26,8 +27,10 @@ repositories {
 }
 
 dependencies {
-  compileOnly 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT'
+  compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
   implementation 'xyz.xenondevs.invui:invui:2.0.0-beta.1'
+  implementation("net.megavex:scoreboard-library-api:2.7.1")
+  runtimeOnly("net.megavex:scoreboard-library-implementation:2.7.1")
   compileOnly 'org.mvplugins.multiverse.core:multiverse-core:5.5.3'
   compileOnly 'org.mvplugins.multiverse.netherportals:multiverse-netherportals:5.0.4'
   compileOnly 'org.mvplugins.multiverse.inventories:multiverse-inventories:5.3.2'
@@ -60,7 +63,8 @@ tasks.withType(JavaCompile).configureEach {
   options.encoding = 'UTF-8'
 }
 
-tasks.jar {
+tasks.shadowJar {
+  archiveClassifier.set('dev')
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   from {
     configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }

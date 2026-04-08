@@ -15,7 +15,7 @@ public class RoundTaskTicker {
 
     private final JavaPlugin plugin;
     private final GoalManager goalManager;
-    private final RoundDisplay display;
+    private final RoundPresenter presenter;
     private final RoundParticipants participants;
     
     // Ticker state
@@ -26,12 +26,12 @@ public class RoundTaskTicker {
     public RoundTaskTicker(
         JavaPlugin plugin,
         GoalManager goalManager,
-        RoundDisplay display,
+        RoundPresenter presenter,
         RoundParticipants participants
     ) {
         this.plugin = plugin;
         this.goalManager = goalManager;
-        this.display = display;
+        this.presenter = presenter;
         this.participants = participants;
     }
 
@@ -42,10 +42,10 @@ public class RoundTaskTicker {
         
         preparationTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             if (remaining[0] > 0) {
-                display.updatePreparationDisplay(remaining[0]);
+                presenter.updatePreparationDisplay(remaining[0]);
                 remaining[0]--;
             } else {
-                display.updatePreparationDisplay(0);
+                presenter.updatePreparationDisplay(0);
                 stopPreparationTicker();
                 onPreparationComplete.run();
             }
@@ -75,7 +75,7 @@ public class RoundTaskTicker {
             }
 
             if (timer.hasLimit()) {
-                display.updateGameTimerDisplay(timer.getRemainingMillis(), timer.getLimitMillis());
+                presenter.updateGameTimerDisplay(timer.getRemainingMillis(), timer.getLimitMillis());
             }
 
             for (UUID id : participants.getParticipants()) {
