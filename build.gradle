@@ -20,6 +20,10 @@ repositories {
     url = uri('https://repo.onarandombox.com/content/groups/public/')
   }
   mavenCentral()
+  maven {
+    name = 'jitpack'
+    url = uri('https://jitpack.io')
+  }
 }
 
 dependencies {
@@ -30,6 +34,23 @@ dependencies {
   compileOnly 'org.mvplugins.multiverse.core:multiverse-core:5.5.3'
   compileOnly 'org.mvplugins.multiverse.netherportals:multiverse-netherportals:5.0.4'
   compileOnly 'org.mvplugins.multiverse.inventories:multiverse-inventories:5.3.2'
+
+  // Make Multiverse available on the test classpath so test subclasses of BingoWorldService load
+  testImplementation 'org.mvplugins.multiverse.core:multiverse-core:5.5.3'
+  testImplementation 'org.mvplugins.multiverse.netherportals:multiverse-netherportals:5.0.4'
+  testImplementation 'org.mvplugins.multiverse.inventories:multiverse-inventories:5.3.2'
+
+  // Testing
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+  // Include the junit-jupiter aggregator to ensure the platform launcher and engines are available
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.2'
+  testImplementation 'com.google.code.gson:gson:2.10.1'
+  // Include Paper API on the test classpath so MockBukkit and Paper integrations initialize
+  testImplementation 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT'
+  // MockBukkit artifact for Paper 1.21 compatibility (newer 4.0.0 coordinates)
+  testImplementation 'org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.0.0'
 }
 
 java {
@@ -45,7 +66,14 @@ tasks.withType(JavaCompile).configureEach {
 tasks.shadowJar {
   archiveClassifier.set('dev')
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  relocate 'net.megavex.scoreboardlibrary', 'com.hairo.bingomc.libs.scoreboardlibrary'
+  from {
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+  }
 }
 
-build.dependsOn shadowJar
+tasks.test {
+  useJUnitPlatform()
+  testLogging {
+    events "passed", "skipped", "failed"
+  }
+}
