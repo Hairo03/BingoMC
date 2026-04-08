@@ -60,13 +60,19 @@ public final class GoalConfigService {
 
     public GoalLoadResult loadGoals() {
         ensureGoalsFileExists();
+        return loadGoalsFrom(new File(plugin.getDataFolder(), "goals.yml"));
+    }
 
-        File goalsFile = new File(plugin.getDataFolder(), "goals.yml");
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(goalsFile);
-        List<Map<?, ?>> rawGoals = config.getMapList("goals");
+    public GoalLoadResult loadGoalsFrom(File file) {
+        return loadGoalsFrom(file, "goals");
+    }
+
+    public GoalLoadResult loadGoalsFrom(File file, String listKey) {
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        List<Map<?, ?>> rawGoals = config.getMapList(listKey);
 
         if (rawGoals.isEmpty()) {
-            return new GoalLoadResult(List.of(), List.of("Missing 'goals' list in goals.yml"));
+            return new GoalLoadResult(List.of(), List.of("Missing 'goals' list in " + file.getName()));
         }
 
         List<LoadedGoal> loaded = new ArrayList<>();
@@ -103,7 +109,7 @@ public final class GoalConfigService {
         }
 
         if (loaded.isEmpty() && errors.isEmpty()) {
-            errors.add("No enabled goals found in goals.yml.");
+            errors.add("No enabled goals found in " + file.getName() + ".");
         }
 
         return new GoalLoadResult(loaded, errors);

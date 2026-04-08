@@ -11,6 +11,7 @@ Players compete to complete randomized goals across isolated per-player worlds. 
 - Nether and End portals route to each player's own dimension via Multiverse-NetherPortals
 - 10 configurable goal types (see [Configuration](#configuration))
 - 28 default goals across 4 difficulty tiers: Easy (25 pts), Medium (50 pts), Hard (100 pts), Impossible (200 pts)
+- One-click goal randomization from a curated pool (`random_goals.yml`), balanced by difficulty and playstyle
 - Preparation phase with movement blocking before the round timer starts
 - Boss bar countdown timer during the round
 - Live goal sidebar with pinnable goals and an in-game goal viewer GUI
@@ -40,7 +41,7 @@ Output: `build/libs/BingoMC-1.0.0-SNAPSHOT-dev.jar`
 
 1. Install Multiverse-Core, Multiverse-NetherPortals, and Multiverse-Inventories on your server.
 2. Copy the BingoMC JAR into `plugins/`.
-3. Start the server once to generate `plugins/BingoMC/config.yml` and `plugins/BingoMC/goals.yml`.
+3. Start the server once to generate `plugins/BingoMC/config.yml`, `plugins/BingoMC/goals.yml`, and `plugins/BingoMC/random_goals.yml`.
 4. Edit `goals.yml` as needed (the defaults are usable out of the box).
 5. Use `/bingo goals reload` to apply changes without restarting (only works when no round is active).
 
@@ -53,6 +54,21 @@ preparation-countdown-seconds: 60
 ```
 
 The number of seconds players are frozen in place before the round timer starts.
+
+### `random_goals.yml`
+
+A curated pool of goals the randomizer draws from. Copied to the plugin data folder on first run. Admins can add or edit entries manually — invalid entries are logged as warnings at startup but do not abort the plugin.
+
+Format is identical to `goals.yml` with two extra fields per entry:
+
+| Field | Description |
+|---|---|
+| `difficulty` | `easy`, `normal`, `advanced`, `hard`, or `extreme` — controls tier balance |
+| `playstyle` | Freeform tag (e.g. `adventurer`, `fighter`, `crafter`) — ensures variety within each tier |
+
+The randomizer picks 5 easy / 7 normal / 8 advanced / 5 hard / 3 extreme goals (28 total) using a round-robin across playstyles within each tier. Trigger the randomizer from `/bingo goals admin`.
+
+Developers can regenerate the bundled pool from `random_goals.csv` using `scripts/csv_to_yml.py` (not bundled in the JAR).
 
 ### `goals.yml`
 

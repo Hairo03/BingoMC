@@ -96,6 +96,11 @@ public class BingoWorldService {
         return createdWorldSets;
     }
 
+    public boolean isInBingoWorld(Player player) {
+        World world = player.getWorld();
+        return world != null && world.getName().startsWith("bingo_");
+    }
+
     public void activateRoundWorldSets(Map<UUID, PlayerWorldSet> createdWorldSets) {
         activeRoundWorldSets.clear();
         activeRoundWorldSets.putAll(createdWorldSets);

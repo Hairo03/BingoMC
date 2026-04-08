@@ -43,7 +43,21 @@ Goals are stateless; `GoalManager` holds all mutable state (completions, progres
 | `ConsumeAwareGoal` | Receives `onItemConsumed(Player, Material)` before evaluate fires — for consumption counting |
 | `RoundAwareGoal` | `onRoundStart(Player)` to capture baselines; `onRoundReset()` to clear per-round state |
 
-**Loading:** `GoalConfigService` parses `goals.yml` via a `Map<String, GoalFactory>` (one lambda per type), validates eagerly, returns `GoalLoadResult`. `GoalsService` registers results into `GoalManager`.
+**Loading:** `GoalConfigService` parses a YAML file via a `Map<String, GoalFactory>` (one lambda per type), validates eagerly, returns `GoalLoadResult`. The key methods are:
+
+- `loadGoals()` — loads `goals.yml` from the data folder
+- `loadGoalsFrom(File)` — loads `goals` list from any file
+- `loadGoalsFrom(File, String listKey)` — loads from a named list key (used by `RandomGoalPoolService` to validate `random_goals.yml` with `listKey = "random_goals"`)
+
+`GoalsService` registers results from `loadGoals()` into `GoalManager`.
+
+**Goal pool and randomization:**
+
+`RandomGoalPoolService` loads `random_goals.yml` (bundled, copied to data folder on first run). On `loadPool()`, it reads difficulty/playstyle metadata from the raw YAML, delegates validation to `GoalConfigService.loadGoalsFrom(file, "random_goals")`, and merges them into `List<RandomGoalEntry>`. Invalid entries are logged as warnings; the pool is never empty-aborted.
+
+`GoalRandomizerService.randomize()` draws a balanced set from the pool (5 easy / 7 normal / 8 advanced / 5 hard / 3 extreme), using round-robin across shuffled playstyle buckets within each tier. It writes the selected raw YAML maps directly to `goals.yml` (no re-serialization), then calls `GoalsService.reloadGoals(false)`. Returns `null` on success or an error string on failure.
+
+The developer script `scripts/csv_to_yml.py` (not bundled) regenerates `src/main/resources/random_goals.yml` from `random_goals.csv`.
 
 ### Adding a new goal type
 
@@ -62,6 +76,8 @@ Goals are stateless; `GoalManager` holds all mutable state (completions, progres
 - **ScoreboardLibrary** (`net.megavex`) — live per-player sidebar via `GoalsSidebar`. Bundled and relocated to `com.hairo.bingomc.libs.scoreboardlibrary` to avoid conflicts.
 
 `GoalsSidebar` is registered as the completion callback on `GoalManager` and updates the sidebar on every goal completion.
+
+`GoalsAdminGui` includes a two-step confirm Randomize button (bottom-center slot). It uses `Item.builder()` with `setItemProvider()` + `notifyWindows()` to toggle between the idle and confirm states without reopening the inventory.
 
 ### Text formatting
 
