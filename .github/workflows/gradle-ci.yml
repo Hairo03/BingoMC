@@ -36,8 +36,27 @@ jobs:
       - name: Build with Gradle Wrapper
         run: ./gradlew build
 
-      - name: Test with Gradle Wrapper
-        run: ./gradlew test
+      - name: Upload test reports
+        id: upload-test-reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-test-reports
+          path: |
+            build/reports/tests/test/
+            build/test-results/test/
+            build/reports/problems/
+          if-no-files-found: ignore
+
+      - name: Summarize test reports
+        if: always()
+        run: |
+          {
+            echo "### Gradle test reports"
+            echo "- Artifact: [gradle-test-reports](${{ steps.upload-test-reports.outputs.artifact-url }})"
+            echo "- Test report HTML: build/reports/tests/test/index.html"
+            echo "- Raw test results: build/test-results/test/"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   dependency-submission:
     runs-on: ubuntu-latest
